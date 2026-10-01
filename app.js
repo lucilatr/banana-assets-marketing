@@ -339,9 +339,13 @@
     tdSt.appendChild(btn);
     tr.appendChild(tdSt);
 
-    // P (desplegable en edición, texto en vista pública)
+    // P (desplegable en edición, texto en vista pública). Si está Hecho, no lleva prioridad.
     var pr = priorityOf(sec.id, it);
     var tdP = document.createElement("td");
+    if (st === "hecho") {
+      tdP.className = "p-cell"; tdP.innerHTML = "";
+      tr.appendChild(tdP);
+    } else {
     tdP.className = "p-cell " + pr;
     if (isEdit()) {
       var sel = document.createElement("select");
@@ -359,6 +363,7 @@
       tdP.textContent = pr;
     }
     tr.appendChild(tdP);
+    }
 
     // Asset / Video
     var tdA = document.createElement("td");
