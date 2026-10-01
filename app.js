@@ -50,7 +50,10 @@
       saved: "✓ Guardado. En ~1 minuto se ve en la versión pública.",
       saveErr: "No se pudo guardar: ",
       tokenPrompt: "Pegá tu token de GitHub (se guarda solo en este navegador).\n\nCreá uno en: github.com/settings/tokens → Fine-grained → repo banana-assets-marketing → permiso Contents: Read and write.",
-      noChanges: "No hay cambios para guardar."
+      noChanges: "No hay cambios para guardar.",
+      autoIdle: "Autoguardado", autoPending: "Sin guardar…", autoSaving: "Guardando…",
+      autoSaved: "✓ Guardado", autoError: "⚠ Error (clic para reintentar)",
+      autoTip: "Se guarda solo. Clic para guardar ahora."
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -70,7 +73,10 @@
       saved: "✓ Saved. It shows up in the public version in ~1 minute.",
       saveErr: "Could not save: ",
       tokenPrompt: "Paste your GitHub token (stored only in this browser).\n\nCreate one at: github.com/settings/tokens → Fine-grained → repo banana-assets-marketing → Contents: Read and write.",
-      noChanges: "No changes to save."
+      noChanges: "No changes to save.",
+      autoIdle: "Autosave", autoPending: "Unsaved…", autoSaving: "Saving…",
+      autoSaved: "✓ Saved", autoError: "⚠ Error (click to retry)",
+      autoTip: "Saves automatically. Click to save now."
     }
   };
 
@@ -376,58 +382,91 @@
 
   function b64(str) { return btoa(unescape(encodeURIComponent(str))); }
 
-  function saveToGitHub() {
-    var t = UI[lang], gh = CFG.meta.github;
-    if (!gh || !gh.owner) { window.alert("Falta configurar meta.github en config.js"); return; }
+  // ----- Auto-guardado -----
+  var saveTimer = null;     // debounce
+  var savingNow = false;    // hay un PUT en curso
+  var saveState = "idle";   // idle | pending | saving | saved | error
 
+  // Pide el token UNA sola vez (queda en el navegador). Si ya está, lo devuelve.
+  function ensureToken(interactive) {
     var token = localStorage.getItem(LS_TOKEN) || "";
-    if (!token) {
-      token = (window.prompt(t.tokenPrompt, "") || "").trim();
-      if (!token) return;
-      localStorage.setItem(LS_TOKEN, token);
-    }
+    if (token) return token;
+    if (!interactive) return "";
+    token = (window.prompt(UI[lang].tokenPrompt, "") || "").trim();
+    if (token) localStorage.setItem(LS_TOKEN, token);
+    return token;
+  }
 
-    var btn = document.getElementById("btn-publish");
-    btn.disabled = true; btn.textContent = t.saving;
+  // Marca que hay cambios y programa el guardado automático (sin botón).
+  function markDirty() {
+    dirty = true;
+    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore);
+    scheduleAutosave();
+    setSaveState("pending");
+  }
 
+  function scheduleAutosave() {
+    if (!isEdit()) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { doSave(true); }, 1200);
+  }
+
+  // interactive=true → vino de un clic manual (puede pedir el token).
+  function doSave(fromAuto) {
+    if (!isEdit()) return;
+    var gh = CFG.meta.github;
+    if (!gh || !gh.owner) return;
+    if (savingNow) { scheduleAutosave(); return; }     // reintenta cuando termine
+
+    // Pide el token una sola vez (la primera que haya que guardar). Después queda.
+    var token = ensureToken(true);
+    if (!token) { setSaveState("pending"); return; }
+
+    savingNow = true; setSaveState("saving");
     var api = "https://api.github.com/repos/" + gh.owner + "/" + gh.repo + "/contents/" + gh.path;
     var headers = { "Authorization": "token " + token, "Accept": "application/vnd.github+json" };
     var content = b64(JSON.stringify(currentData(), null, 2));
-    var sha = localStorage.getItem(LS_SHA) || "";
 
-    // Pedimos el sha actual (si cambió) y después hacemos PUT.
     fetch(api + "?ref=" + gh.branch, { headers: headers, cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (meta) {
-        var curSha = (meta && meta.sha) || sha;
+        var curSha = (meta && meta.sha) || localStorage.getItem(LS_SHA) || "";
         var payload = { message: "Actualizar assets de marketing", content: content, branch: gh.branch };
         if (curSha) payload.sha = curSha;
         return fetch(api, { method: "PUT", headers: headers, body: JSON.stringify(payload) });
       })
-      .then(function (r) {
-        return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
-      })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
       .then(function (res) {
-        btn.disabled = false;
+        savingNow = false;
         if (res.ok) {
           if (res.j && res.j.content && res.j.content.sha) localStorage.setItem(LS_SHA, res.j.content.sha);
-          dirty = false; updateSaveBtn();
-          window.alert(t.saved);
+          dirty = false; setSaveState("saved");
         } else {
-          updateSaveBtn();
-          if (res.status === 401 || res.status === 403) localStorage.removeItem(LS_TOKEN);
-          window.alert(t.saveErr + (res.j && res.j.message ? res.j.message : res.status));
+          setSaveState("error");
+          if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem(LS_TOKEN);
+            window.alert(UI[lang].saveErr + (res.j && res.j.message ? res.j.message : res.status));
+          }
         }
       })
-      .catch(function (e) { btn.disabled = false; updateSaveBtn(); window.alert(t.saveErr + e.message); });
+      .catch(function () { savingNow = false; setSaveState("error"); });
   }
 
-  function markDirty() { dirty = true; updateSaveBtn(); }
-  function updateSaveBtn() {
-    var btn = document.getElementById("btn-publish");
-    if (!btn) return;
-    btn.textContent = dirty ? UI[lang].saveDirty : UI[lang].save;
+  function setSaveState(s) {
+    saveState = s;
+    var el = document.getElementById("btn-publish");
+    if (!el) return;
+    var t = UI[lang], map = {
+      idle:    t.autoIdle,
+      pending: t.autoPending,
+      saving:  t.autoSaving,
+      saved:   t.autoSaved,
+      error:   t.autoError
+    };
+    el.textContent = map[s] || t.autoIdle;
+    el.className = "save-indicator " + s;
   }
+  function updateSaveBtn() { setSaveState(saveState); }
 
   /* ---------------- Template modal ---------------- */
   function openTemplate(w, h, title) {
@@ -449,7 +488,8 @@
   function setLang(l) { lang = l; localStorage.setItem(LS_LANG, l); render(); }
 
   document.getElementById("btn-pdf").addEventListener("click", function () { window.print(); });
-  document.getElementById("btn-publish").addEventListener("click", saveToGitHub);
+  document.getElementById("btn-publish").addEventListener("click", function () { doSave(false); });
+  document.getElementById("btn-publish").title = UI[lang].autoTip;
 
   document.getElementById("btn-mode").addEventListener("click", function () {
     mode = isEdit() ? "read" : "edit";
