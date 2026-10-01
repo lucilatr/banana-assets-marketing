@@ -31,5 +31,11 @@
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
     "sitio::website": "LOGO Y WALLPAPER"
   },
-  "updated": "2026-10-01T21:35:37.217Z"
+  "assign": {
+    "captura::clip-library": [
+      "FERNANDO MALDONADO",
+      "VALENTIN FRARE"
+    ]
+  },
+  "updated": "2026-10-01T21:43:59.581Z"
 }
