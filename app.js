@@ -71,7 +71,8 @@
       filterHide: "Clic para ocultar este estado", filterShow: "Clic para volver a mostrarlo",
       filterEmpty: "No hay ítems para mostrar con el filtro actual.",
       filterBy: "Filtrar por:", byStatus: "Estado", byPerson: "Persona",
-      filterClear: "Limpiar filtros", filterClearTip: "Quita todos los filtros (estado y persona)"
+      filterClear: "Limpiar filtros", filterClearTip: "Quita todos los filtros (estado y persona)",
+      tlTitle: "Línea de tiempo", tlPending: "Pendientes de generar:", tlToday: "Hoy", tlTbd: "a definir"
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -100,7 +101,8 @@
       filterHide: "Click to hide this status", filterShow: "Click to show it again",
       filterEmpty: "No items to show with the current filter.",
       filterBy: "Filter by:", byStatus: "Status", byPerson: "Person",
-      filterClear: "Clear filters", filterClearTip: "Remove all filters (status and person)"
+      filterClear: "Clear filters", filterClearTip: "Remove all filters (status and person)",
+      tlTitle: "Timeline", tlPending: "Left to create:", tlToday: "Today", tlTbd: "TBD"
     }
   };
 
@@ -141,7 +143,7 @@
     updateSaveBtn();
 
     renderFilterBar();
-    renderLegend();
+    renderTimeline();
 
     var root = document.getElementById("sections");
     root.innerHTML = "";
@@ -241,13 +243,68 @@
     }
   }
 
-  function renderLegend() {
-    var h = "";
-    CFG.meta.priorities.forEach(function (p) {
-      h += '<span><span class="pri ' + p.key + '">' + p.key + "</span> " + esc(L(p.label)) + "</span>";
+  // Cuenta pendientes (no "hecho") por prioridad
+  function pendingByPriority() {
+    var c = { P1: 0, P2: 0, P3: 0 };
+    CFG.sections.forEach(function (s) {
+      s.items.forEach(function (it) {
+        if (statusOf(s.id, it) === "hecho") return;
+        var p = priorityOf(s.id, it);
+        if (c[p] !== undefined) c[p]++;
+      });
     });
-    if (L(CFG.meta.hint)) h += '<span class="hint">' + esc(L(CFG.meta.hint)) + "</span>";
-    document.getElementById("legend").innerHTML = h;
+    return c;
+  }
+
+  function fmtDate(iso) {
+    var p = iso.split("-");
+    var months = (lang === "es")
+      ? ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+      : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return parseInt(p[2], 10) + " " + months[parseInt(p[1], 10) - 1];
+  }
+  function dayMs(iso) { var p = iso.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function todayMs() { var d = new Date(); return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+  function renderTimeline() {
+    var t = UI[lang], tl = CFG.meta.timeline;
+    var box = document.getElementById("timeline");
+    if (!tl || !tl.milestones) { box.innerHTML = ""; return; }
+
+    var pend = pendingByPriority();
+    var start = dayMs(tl.start), end = dayMs(tl.end), span = Math.max(1, end - start);
+    function pct(ms) { return Math.max(0, Math.min(100, ((ms - start) / span) * 100)); }
+
+    var h = '<div class="tl-head">' +
+      '<span class="tl-title">🗺️ ' + t.tlTitle + "</span>" +
+      '<span class="tl-prios">' + t.tlPending + " " +
+        '<span class="pri-count p1">P1 ×' + pend.P1 + "</span>" +
+        '<span class="pri-count p2">P2 ×' + pend.P2 + "</span>" +
+        '<span class="pri-count p3">P3 ×' + pend.P3 + "</span>" +
+      "</span></div>";
+
+    // track con "hoy" + hitos
+    var tms = todayMs();
+    h += '<div class="tl-track">';
+    if (tms >= start && tms <= end) {
+      h += '<div class="tl-today" style="left:' + pct(tms) + '%"><span>' + t.tlToday + "</span></div>";
+    }
+    tl.milestones.forEach(function (m) {
+      h += '<div class="tl-dot ' + (m.type || "") + (m.tbd ? " tbd" : "") + '" style="left:' + pct(dayMs(m.date)) + '%" title="' + esc(L(m.label)) + '"></div>';
+    });
+    h += "</div>";
+
+    // lista de hitos
+    h += '<ul class="tl-list">';
+    tl.milestones.forEach(function (m) {
+      h += '<li class="tl-item ' + (m.type || "") + (m.tbd ? " tbd" : "") + '">' +
+        '<span class="tl-date">' + fmtDate(m.date) + "</span>" +
+        '<span class="tl-label">' + esc(L(m.label)) + (m.tbd ? ' <span class="tl-tbd">' + t.tlTbd + "</span>" : "") + "</span>" +
+      "</li>";
+    });
+    h += "</ul>";
+
+    box.innerHTML = h;
   }
 
   function renderProgress() {

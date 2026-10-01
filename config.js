@@ -46,7 +46,21 @@ window.MATERIALS_CONFIG = {
       "VALENTIN FRARE",
       "AGUSTIN MARTINEZ"
     ],
-    hint: { es: "", en: "" }
+    hint: { es: "", en: "" },
+    // Línea de tiempo / hoja de ruta (editable). Fechas en formato AAAA-MM-DD.
+    timeline: {
+      start: "2026-10-01",
+      end:   "2026-10-21",
+      milestones: [
+        { date: "2026-10-07", type: "demo",
+          label: { es: "Publicar demo (para testeo de prensa)", en: "Publish demo (for press testing)" } },
+        { date: "2026-10-08", type: "press",
+          label: { es: "La prensa testea la demo", en: "Press tests the demo" } },
+        { date: "2026-10-19", type: "launch", tbd: true,
+          label: { es: "Lanzamiento de la demo + anuncio — ¿19 oct o antes? A definir",
+                    en: "Demo launch + announcement — Oct 19 or earlier? TBD" } }
+      ]
+    }
   },
 
   sections: [

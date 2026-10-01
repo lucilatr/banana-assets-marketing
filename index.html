@@ -79,11 +79,40 @@
       cursor: pointer; text-decoration: underline; padding: 2px 4px; }
     .empty-filter { color: var(--ink-soft); font-style: italic; padding: 20px 2px; }
 
-    .legend { margin: 6px 0 0; display: flex; gap: 6px 18px; align-items: center; flex-wrap: wrap;
-      font-size: .85rem; color: var(--ink-soft); }
-    .pri { font-weight: 800; }
     .pri.P1 { color: var(--p1); } .pri.P2 { color: var(--p2); } .pri.P3 { color: var(--p3); }
-    .legend .hint { font-style: italic; }
+
+    /* línea de tiempo / hoja de ruta */
+    .timeline { margin: 18px 0 8px; background: var(--panel); border: 1px solid var(--line);
+      border-radius: 14px; padding: 16px 18px; }
+    .tl-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tl-title { font-weight: 800; font-size: 1rem; }
+    .tl-prios { font-size: .82rem; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .pri-count { font-weight: 800; font-size: .78rem; padding: 2px 9px; border-radius: 999px; }
+    .pri-count.p1 { color: var(--p1); background: #fae3e0; } .pri-count.p2 { color: var(--p2); background: #f6ecd0; }
+    .pri-count.p3 { color: var(--p3); background: #ddeaf8; }
+
+    .tl-track { position: relative; height: 34px; margin: 6px 6px 10px; border-top: 2px solid var(--line); }
+    .tl-dot { position: absolute; top: -7px; width: 13px; height: 13px; border-radius: 50%;
+      transform: translateX(-50%); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+    .tl-dot.demo   { background: var(--actualizar); }
+    .tl-dot.press  { background: var(--p3); }
+    .tl-dot.launch { background: var(--p1); width: 16px; height: 16px; top: -9px; }
+    .tl-today { position: absolute; top: -2px; height: 20px; border-left: 2px dashed var(--ink);
+      transform: translateX(-1px); }
+    .tl-today span { position: absolute; top: 20px; left: -12px; font-size: .64rem; font-weight: 800;
+      color: var(--ink); white-space: nowrap; }
+
+    .tl-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .tl-item { display: flex; align-items: flex-start; gap: 10px; font-size: .88rem; padding-left: 14px; position: relative; }
+    .tl-item::before { content: ""; position: absolute; left: 0; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-soft); }
+    .tl-item.demo::before   { background: var(--actualizar); }
+    .tl-item.press::before  { background: var(--p3); }
+    .tl-item.launch::before { background: var(--p1); }
+    .tl-date { font-weight: 800; min-width: 54px; color: var(--ink); }
+    .tl-label { color: var(--ink); }
+    .tl-item.launch .tl-label { font-weight: 700; }
+    .tl-tbd { display: inline-block; font-size: .64rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--p1); background: #fae3e0; border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
 
     /* ---------- Progress ---------- */
     .progress { margin: 14px 0 26px; }
@@ -269,12 +298,13 @@
     </div>
 
     <div class="filterbar" id="filterbar"></div>
-    <div class="legend" id="legend"></div>
 
     <div class="progress">
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
       <div class="progress-label" id="progress-label"></div>
     </div>
+
+    <div class="timeline" id="timeline"></div>
 
     <h2 class="sec-list" id="sec-list-title"></h2>
     <div id="sections"></div>
