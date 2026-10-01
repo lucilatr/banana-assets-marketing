@@ -43,6 +43,11 @@
     "sitio::presskit-page": "PONER BOTON EN LA PAGINA"
   },
   "assign": {
+    "captura::capture-guide": [
+      "VALENTIN FRARE",
+      "AGUSTIN MARTINEZ",
+      "LUCILA TROBBIANI"
+    ],
     "captura::clip-library": [
       "FERNANDO MALDONADO",
       "VALENTIN FRARE",
