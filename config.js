@@ -83,7 +83,7 @@ window.MATERIALS_CONFIG = {
           medida: "", links: [] },
         { id: "capture-guide", status: "falta", p: "P2",
           title: { es: "Mini doc / sitio de cómo capturar en el juego", en: "Mini doc / site on how to capture in-game" },
-          note: { es: "Documento chico (o mini sitio) que explique cómo captar dentro del juego: controles y presets.", en: "Small doc (or mini-site) explaining how to capture inside the game: controls and presets." },
+          note: { es: "Documento chico (o mini sitio) que explique cómo capturar dentro del juego: controles y presets.", en: "Small doc (or mini-site) explaining how to capture inside the game: controls and presets." },
           medida: "", links: [] },
         { id: "vertical-cam", status: "hecho", p: "P2",
           title: { es: "Preset de cámara vertical", en: "Vertical camera preset" },
