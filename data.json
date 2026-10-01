@@ -14,7 +14,8 @@
     "keyart::logo-versions": "P2",
     "sitio::factsheet": "P2",
     "redes::discord-emotes": "P3",
-    "creadores::creator-list": "P2"
+    "creadores::creator-list": "P2",
+    "videos::trailer-cuts": "P1"
   },
   "links": {
     "keyart::renders::free": "https://drive.google.com/drive/folders/1A7U2XQ7QDO_UGNi2797UvH0UxJdpT0jn?usp=drive_link",
@@ -99,5 +100,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-01T22:08:21.632Z"
+  "updated": "2026-10-01T22:08:40.501Z"
 }
