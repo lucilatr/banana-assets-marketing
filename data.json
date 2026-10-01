@@ -5,7 +5,8 @@
     "captura::clip-library": "actualizar",
     "creadores::wishlist-screen": "revisar",
     "creadores::wishlist-button": "revisar",
-    "keyart::brand-guide": "revisar"
+    "keyart::brand-guide": "revisar",
+    "keyart::renders": "revisar"
   },
   "links": {
     "keyart::renders::free": "https://drive.google.com/drive/folders/1A7U2XQ7QDO_UGNi2797UvH0UxJdpT0jn?usp=drive_link",
@@ -29,5 +30,5 @@
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
     "sitio::website": "LOGO Y WALLPAPER"
   },
-  "updated": "2026-10-01T21:35:27.098Z"
+  "updated": "2026-10-01T21:35:32.997Z"
 }
