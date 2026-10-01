@@ -105,7 +105,7 @@
     tbody tr:hover { background: var(--panel); }
     tbody tr.hecho:hover { background: #e2f3e9; }
 
-    .col-estado { width: 124px; } .col-p { width: 40px; } .col-medida { width: 150px; } .col-links { width: 170px; }
+    .col-estado { width: 124px; } .col-p { width: 62px; } .col-medida { width: 150px; } .col-links { width: 170px; }
     .col-dur { width: 96px; }
 
     /* status chip (clickeable) */
@@ -163,6 +163,10 @@
 
     td.p-cell { font-weight: 800; }
     .p-cell.P1 { color: var(--p1); } .p-cell.P2 { color: var(--p2); } .p-cell.P3 { color: var(--p3); }
+    .p-select { font: inherit; font-weight: 800; font-size: .9rem; border: 1px solid var(--line);
+      border-radius: 6px; padding: 3px 4px; cursor: pointer; background: #fff; }
+    .p-select:hover { border-color: var(--ink); }
+    .p-select.P1 { color: var(--p1); } .p-select.P2 { color: var(--p2); } .p-select.P3 { color: var(--p3); }
 
     .asset-title { font-weight: 700; margin: 0 0 2px; }
     .asset-note { color: var(--ink-soft); font-size: .88rem; margin: 0; }
@@ -225,6 +229,7 @@
       .section.collapsed table { display: table !important; }
       .section.collapsed .section-caret { display: none; }
       tbody tr { break-inside: avoid; }
+      .p-select { border: none; background: none; padding: 0; -webkit-appearance: none; appearance: none; }
       tbody tr.hecho { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       body { font-size: 12px; }
       a { color: var(--ink); text-decoration: none; }

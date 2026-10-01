@@ -17,6 +17,7 @@
   var LS_STATUS = "banana-assets-status-v1";
   var LS_LINKS  = "banana-assets-links-v1";
   var LS_NOTES  = "banana-assets-notes-v1";
+  var LS_PRIO   = "banana-assets-prio-v1";
   var LS_ASSIGN = "banana-assets-assign-v1";
   var LS_FILTER = "banana-assets-filter-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
@@ -27,6 +28,7 @@
   var statusOverride = load(LS_STATUS, {});
   var linkStore      = load(LS_LINKS, {});
   var noteStore      = load(LS_NOTES, {});   // notas "qué hay que actualizar" por item
+  var prioOverride   = load(LS_PRIO, {});    // prioridad cambiada por item (P1/P2/P3)
   var assignStore    = load(LS_ASSIGN, {});  // personas asignadas por item (array de nombres)
   var hiddenStatus   = load(LS_FILTER, {});  // estados ocultos por el filtro (solo vista local)
   var collapsed      = load(LS_COLLAP, {});
@@ -99,6 +101,7 @@
   function L(o) { return (o && (o[lang] || o.es || o.en)) || ""; }
   function keyOf(sId, iId) { return sId + "::" + iId; }
   function statusOf(sId, it) { return statusOverride[keyOf(sId, it.id)] || it.status || "falta"; }
+  function priorityOf(sId, it) { return prioOverride[keyOf(sId, it.id)] || it.p || "P1"; }
   function isEdit() { return mode === "edit"; }
 
   function esc(s) {
@@ -276,9 +279,25 @@
     tdSt.appendChild(btn);
     tr.appendChild(tdSt);
 
-    // P
+    // P (desplegable en edición, texto en vista pública)
+    var pr = priorityOf(sec.id, it);
     var tdP = document.createElement("td");
-    tdP.className = "p-cell " + it.p; tdP.textContent = it.p;
+    tdP.className = "p-cell " + pr;
+    if (isEdit()) {
+      var sel = document.createElement("select");
+      sel.className = "p-select " + pr;
+      ["P1", "P2", "P3"].forEach(function (p) {
+        var o = document.createElement("option");
+        o.value = p; o.textContent = p; if (p === pr) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", function () {
+        prioOverride[keyOf(sec.id, it.id)] = sel.value; markDirty(); render();
+      });
+      tdP.appendChild(sel);
+    } else {
+      tdP.textContent = pr;
+    }
     tr.appendChild(tdP);
 
     // Asset / Video
@@ -405,12 +424,13 @@
   // data.json guarda SOLO lo que cambia: estados + links. La estructura y los
   // textos viven en config.js. Así el público ve lo último que guardaste.
   function currentData() {
-    return { status: statusOverride, links: linkStore, notes: noteStore, assign: assignStore, updated: new Date().toISOString() };
+    return { status: statusOverride, priority: prioOverride, links: linkStore, notes: noteStore, assign: assignStore, updated: new Date().toISOString() };
   }
 
   function applyData(d) {
     if (!d) return;
     if (d.status && typeof d.status === "object") { statusOverride = d.status; save(LS_STATUS, statusOverride); }
+    if (d.priority && typeof d.priority === "object") { prioOverride = d.priority; save(LS_PRIO, prioOverride); }
     if (d.links  && typeof d.links  === "object") { linkStore = d.links; save(LS_LINKS, linkStore); }
     if (d.notes  && typeof d.notes  === "object") { noteStore = d.notes; save(LS_NOTES, noteStore); }
     if (d.assign && typeof d.assign === "object") { assignStore = d.assign; save(LS_ASSIGN, assignStore); }
@@ -445,7 +465,7 @@
   // Marca que hay cambios y programa el guardado automático (sin botón).
   function markDirty() {
     dirty = true;
-    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore);
+    save(LS_STATUS, statusOverride); save(LS_PRIO, prioOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore);
     scheduleAutosave();
     setSaveState("pending");
   }
@@ -709,8 +729,8 @@
 
   document.getElementById("reset-btn").addEventListener("click", function () {
     if (!window.confirm(UI[lang].resetConfirm)) return;
-    statusOverride = {}; linkStore = {}; noteStore = {}; assignStore = {}; collapsed = {};
-    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore); save(LS_COLLAP, collapsed);
+    statusOverride = {}; prioOverride = {}; linkStore = {}; noteStore = {}; assignStore = {}; collapsed = {};
+    save(LS_STATUS, statusOverride); save(LS_PRIO, prioOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore); save(LS_COLLAP, collapsed);
     markDirty(); render();
   });
 
