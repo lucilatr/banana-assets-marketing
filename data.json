@@ -29,7 +29,8 @@
   },
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
-    "sitio::website": "LOGO Y WALLPAPER"
+    "sitio::website": "LOGO Y WALLPAPER",
+    "steam::event-art": "ANUNCIO DEMO"
   },
   "assign": {
     "captura::clip-library": [
@@ -39,5 +40,5 @@
       "LUCILA TROBBIANI"
     ]
   },
-  "updated": "2026-10-01T21:44:04.295Z"
+  "updated": "2026-10-01T21:44:26.015Z"
 }
