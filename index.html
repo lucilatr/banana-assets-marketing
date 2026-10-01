@@ -258,7 +258,13 @@
     </div>
   </div>
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <!-- Carga con "cache-busting": siempre trae la última versión, sin refrescar a mano -->
+  <script>
+    (function () {
+      var bust = "?t=" + Date.now();
+      document.write('<script src="config.js' + bust + '"><\/script>');
+      document.write('<script src="app.js' + bust + '"><\/script>');
+    })();
+  </script>
 </body>
 </html>
