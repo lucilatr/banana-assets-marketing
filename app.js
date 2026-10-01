@@ -1,17 +1,21 @@
 /* =========================================================================
    Banana Airways — Assets de marketing · lógica del microsite
-   - Estado clickeable (falta → revisar → hecho → ...), fila verde si "hecho"
-   - Botón 📁 por sección (carpeta de Drive con todo el material)
-   - Botón "+" por elemento para pegar/editar un link (se guarda en el navegador)
+   - Estados: Falta → Actualizar → Revisar → Hecho (clic para ciclar)
+   - Modo EDICIÓN vs SOLO LECTURA (la URL con ?edit = edición)
+       · lectura: no se ven los "+ agregar link" vacíos, el estado no se cambia
+       · edición: todo editable + botón "Publicar" para bajar un config con los
+         links cargados (eso es lo que ve el público cuando lo subís)
+   - Botón PDF (imprime / guarda como PDF)
    - Badges de medida punteados → muestran la plantilla a escala
-   Todo el estado se guarda en localStorage (este navegador).
+   Estado y links se guardan en localStorage mientras editás; "Publicar" los
+   vuelca a config.js para que queden fijos y los vea cualquiera.
    ========================================================================= */
 (function () {
   "use strict";
 
   var CFG = window.MATERIALS_CONFIG;
-  var LS_STATUS = "banana-assets-status-v1";   // overrides de estado por item
-  var LS_LINKS  = "banana-assets-links-v1";    // links agregados con "+"
+  var LS_STATUS = "banana-assets-status-v1";
+  var LS_LINKS  = "banana-assets-links-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
   var LS_LANG   = "banana-assets-lang";
 
@@ -20,38 +24,42 @@
   var collapsed      = load(LS_COLLAP, {});
   var lang           = localStorage.getItem(LS_LANG) || "es";
 
-  var CYCLE = ["falta", "revisar", "hecho"];
+  var mode = new URLSearchParams(location.search).has("edit") ? "edit" : "read";
+
+  var CYCLE = ["falta", "actualizar", "revisar", "hecho"];
 
   var UI = {
     es: {
       colEstado: "Estado", colP: "P", colAsset: "Asset", colVideo: "Video",
       colMedida: "Medida / plantilla", colLinks: "Links", colDur: "Duración", colNotas: "Para qué / notas",
       secList: "Lista de assets",
-      st: { hecho: "Hecho", falta: "Falta", revisar: "Revisar" },
-      done: "hechos", missing: "faltan", review: "para revisar",
+      st: { hecho: "Hecho", falta: "Falta", revisar: "Revisar", actualizar: "Actualizar" },
+      done: "hechos", missing: "faltan", review: "para revisar", update: "para actualizar",
       progress: function (d, t) { return d + " de " + t + " assets en Hecho"; },
-      openFolder: "Carpeta", noFolder: "Carpeta",
-      addLink: "+ link", setLink: "Pegá el link:", editLink: "Editar link (vacío = borrar):",
-      pending: "+ agregar link",
-      footer: "El estado y los links se guardan en este navegador. Para compartir una versión fija, editá config.js.",
+      folder: "Carpeta", addLink: "+ agregar link", setLink: "Pegá el link:", editLink: "Editar link (vacío = borrar):",
+      optional: "Opcional",
+      footer: "Los cambios se guardan en este navegador. Tocá “Publicar” para bajar un config.js con los links cargados y subirlo al repo.",
       reset: "Reiniciar todo a los valores del archivo",
       resetConfirm: "¿Borrar todos los cambios de estado y los links agregados a mano?",
-      tpl: "Plantilla a escala", close: "Cerrar"
+      tpl: "Plantilla a escala", close: "Cerrar",
+      modeToEdit: "✏️ Editar", modeToRead: "👁 Vista pública",
+      published: "Se descargó config.js con tus datos. Reemplazá el archivo config.js del repo con ese y commiteá."
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
       colMedida: "Size / template", colLinks: "Links", colDur: "Length", colNotas: "What for / notes",
       secList: "Asset list",
-      st: { hecho: "Done", falta: "Missing", revisar: "Review" },
-      done: "done", missing: "missing", review: "to review",
+      st: { hecho: "Done", falta: "Missing", revisar: "Review", actualizar: "Update" },
+      done: "done", missing: "missing", review: "to review", update: "to update",
       progress: function (d, t) { return d + " of " + t + " assets marked Done"; },
-      openFolder: "Folder", noFolder: "Folder",
-      addLink: "+ link", setLink: "Paste the link:", editLink: "Edit link (empty = delete):",
-      pending: "+ add link",
-      footer: "Status and links are saved in this browser. To share a fixed version, edit config.js.",
+      folder: "Folder", addLink: "+ add link", setLink: "Paste the link:", editLink: "Edit link (empty = delete):",
+      optional: "Optional",
+      footer: "Changes are saved in this browser. Click “Publish” to download a config.js with the links baked in and push it to the repo.",
       reset: "Reset everything to the file values",
       resetConfirm: "Clear all status changes and manually-added links?",
-      tpl: "Template at scale", close: "Close"
+      tpl: "Template at scale", close: "Close",
+      modeToEdit: "✏️ Edit", modeToRead: "👁 Public view",
+      published: "Downloaded config.js with your data. Replace the repo's config.js with it and commit."
     }
   };
 
@@ -59,7 +67,8 @@
   function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
   function L(o) { return (o && (o[lang] || o.es || o.en)) || ""; }
   function keyOf(sId, iId) { return sId + "::" + iId; }
-  function statusOf(sId, item) { var k = keyOf(sId, item.id); return statusOverride[k] || item.status || "falta"; }
+  function statusOf(sId, it) { return statusOverride[keyOf(sId, it.id)] || it.status || "falta"; }
+  function isEdit() { return mode === "edit"; }
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -71,15 +80,22 @@
   function render() {
     var t = UI[lang];
     document.documentElement.lang = lang;
+    document.body.classList.toggle("read", !isEdit());
 
     document.getElementById("site-title").textContent = L(CFG.meta.title);
-    document.getElementById("site-subtitle").textContent = L(CFG.meta.subtitle);
+    var sub = document.getElementById("site-subtitle");
+    sub.textContent = L(CFG.meta.subtitle);
+    sub.style.display = L(CFG.meta.subtitle) ? "" : "none";
+
     document.getElementById("sec-list-title").textContent = t.secList;
     document.getElementById("footer-text").textContent = t.footer;
     document.getElementById("reset-btn").textContent = t.reset;
     document.getElementById("modal-close").textContent = t.close;
     document.getElementById("btn-en").classList.toggle("active", lang === "en");
     document.getElementById("btn-es").classList.toggle("active", lang === "es");
+    document.getElementById("btn-mode").textContent = isEdit() ? t.modeToRead : t.modeToEdit;
+    document.getElementById("btn-publish").classList.toggle("btn-publish-only", true);
+    document.getElementById("btn-publish").style.display = isEdit() ? "" : "none";
 
     renderSummary();
     renderLegend();
@@ -92,7 +108,7 @@
   }
 
   function counts() {
-    var c = { hecho: 0, falta: 0, revisar: 0, total: 0 };
+    var c = { hecho: 0, falta: 0, revisar: 0, actualizar: 0, total: 0 };
     CFG.sections.forEach(function (s) {
       s.items.forEach(function (it) { c.total++; c[statusOf(s.id, it)]++; });
     });
@@ -101,27 +117,27 @@
 
   function renderSummary() {
     var t = UI[lang], c = counts();
-    var el = document.getElementById("summary");
-    el.innerHTML =
+    document.getElementById("summary").innerHTML =
       '<span class="chip hecho">' + t.st.hecho + "</span><span class='cnt'>" + c.hecho + " " + t.done + " ·</span>" +
-      '<span class="chip falta">' + t.st.falta + "</span><span class='cnt'>" + c.falta + " " + t.missing + " ·</span>" +
-      '<span class="chip revisar">' + t.st.revisar + "</span><span class='cnt'>" + c.revisar + " " + t.review + "</span>";
+      '<span class="chip actualizar">' + t.st.actualizar + "</span><span class='cnt'>" + c.actualizar + " " + t.update + " ·</span>" +
+      '<span class="chip revisar">' + t.st.revisar + "</span><span class='cnt'>" + c.revisar + " " + t.review + " ·</span>" +
+      '<span class="chip falta">' + t.st.falta + "</span><span class='cnt'>" + c.falta + " " + t.missing + "</span>";
   }
 
   function renderLegend() {
-    var t = UI[lang], el = document.getElementById("legend"), h = "";
+    var h = "";
     CFG.meta.priorities.forEach(function (p) {
       h += '<span><span class="pri ' + p.key + '">' + p.key + "</span> " + esc(L(p.label)) + "</span>";
     });
-    h += '<span class="hint">' + esc(L(CFG.meta.hint)) + "</span>";
-    el.innerHTML = h;
+    if (L(CFG.meta.hint)) h += '<span class="hint">' + esc(L(CFG.meta.hint)) + "</span>";
+    document.getElementById("legend").innerHTML = h;
   }
 
   function renderProgress() {
-    var t = UI[lang], c = counts();
+    var c = counts();
     var pct = c.total ? Math.round((c.hecho / c.total) * 100) : 0;
     document.getElementById("progress-fill").style.width = pct + "%";
-    document.getElementById("progress-label").textContent = t.progress(c.hecho, c.total) + "  ·  " + pct + "%";
+    document.getElementById("progress-label").textContent = UI[lang].progress(c.hecho, c.total) + "  ·  " + pct + "%";
   }
 
   function renderSection(sec) {
@@ -133,7 +149,6 @@
     var wrap = document.createElement("div");
     wrap.className = "section" + (isCollapsed ? " collapsed" : "");
 
-    // ---- head
     var head = document.createElement("div");
     head.className = "section-head";
     head.innerHTML =
@@ -141,43 +156,38 @@
       '<h3 class="section-title">' + esc(L(sec.title)) + "</h3>" +
       '<span class="section-count">' + done + "/" + sec.items.length + "</span>";
 
-    var folder = document.createElement("a");
-    if (sec.folderUrl) {
-      folder.className = "folder-link"; folder.href = sec.folderUrl;
-      folder.target = "_blank"; folder.rel = "noopener";
-      folder.innerHTML = "📁 " + esc(t.openFolder);
-    } else {
-      folder.className = "folder-link empty"; folder.href = "javascript:void(0)";
-      folder.textContent = "📁 " + t.noFolder;
-      folder.addEventListener("click", function (e) {
-        e.stopPropagation();
-        promptFolder(sec);
-      });
+    var folderUrl = linkStore["folder::" + sec.id] || sec.folderUrl || "";
+    if (folderUrl || isEdit()) {
+      var folder = document.createElement("a");
+      if (folderUrl) {
+        folder.className = "folder-link"; folder.href = folderUrl;
+        folder.target = "_blank"; folder.rel = "noopener";
+        folder.innerHTML = "📁 " + esc(t.folder);
+        if (isEdit()) folder.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); promptFolder(sec); });
+      } else {
+        folder.className = "folder-link empty"; folder.href = "javascript:void(0)";
+        folder.textContent = "📁 " + t.folder;
+        folder.addEventListener("click", function (e) { e.stopPropagation(); promptFolder(sec); });
+      }
+      folder.addEventListener("click", function (e) { e.stopPropagation(); });
+      head.appendChild(folder);
     }
-    folder.addEventListener("click", function (e) { e.stopPropagation(); });
-    head.appendChild(folder);
+
     head.addEventListener("click", function () {
       collapsed[sec.id] = !collapsed[sec.id]; save(LS_COLLAP, collapsed); render();
     });
     wrap.appendChild(head);
 
-    // ---- table
     var table = document.createElement("table");
-    var thead = "<thead><tr>" +
+    table.innerHTML = "<thead><tr>" +
       '<th class="col-estado">' + t.colEstado + "</th>" +
       '<th class="col-p">' + t.colP + "</th>" +
       "<th>" + (isVideo ? t.colVideo : t.colAsset) + "</th>" +
       (isVideo ? '<th class="col-dur">' + t.colDur + "</th><th>" + t.colNotas + "</th>"
                : '<th class="col-medida">' + t.colMedida + "</th>") +
-      '<th class="col-links">' + t.colLinks + "</th>" +
-      "</tr></thead>";
+      '<th class="col-links">' + t.colLinks + "</th></tr></thead>";
     var tbody = document.createElement("tbody");
-
-    sec.items.forEach(function (it) {
-      tbody.appendChild(renderRow(sec, it, isVideo));
-    });
-
-    table.innerHTML = thead;
+    sec.items.forEach(function (it) { tbody.appendChild(renderRow(sec, it, isVideo)); });
     table.appendChild(tbody);
     wrap.appendChild(table);
     return wrap;
@@ -194,38 +204,37 @@
     var btn = document.createElement("button");
     btn.className = "status-btn " + st;
     btn.textContent = t.st[st];
-    btn.title = lang === "es" ? "Clic para cambiar el estado" : "Click to change status";
-    btn.addEventListener("click", function () {
-      var k = keyOf(sec.id, it.id);
-      var cur = statusOf(sec.id, it);
-      var next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
-      statusOverride[k] = next; save(LS_STATUS, statusOverride); render();
-    });
+    if (isEdit()) {
+      btn.title = lang === "es" ? "Clic para cambiar el estado" : "Click to change status";
+      btn.addEventListener("click", function () {
+        var k = keyOf(sec.id, it.id);
+        statusOverride[k] = CYCLE[(CYCLE.indexOf(st) + 1) % CYCLE.length];
+        save(LS_STATUS, statusOverride); render();
+      });
+    } else {
+      btn.disabled = true;
+    }
     tdSt.appendChild(btn);
     tr.appendChild(tdSt);
 
     // P
     var tdP = document.createElement("td");
-    tdP.className = "p-cell " + it.p;
-    tdP.textContent = it.p;
+    tdP.className = "p-cell " + it.p; tdP.textContent = it.p;
     tr.appendChild(tdP);
 
     // Asset / Video
     var tdA = document.createElement("td");
-    tdA.innerHTML = '<p class="asset-title">' + esc(L(it.title)) + "</p>" +
-      (L(it.note) ? '<p class="asset-note">' + esc(L(it.note)) + "</p>" : "");
+    var optTag = it.optional ? '<span class="opt-tag">' + t.optional + "</span>" : "";
+    tdA.innerHTML = '<p class="asset-title">' + esc(L(it.title)) + optTag + "</p>";
+    if (!isVideo && L(it.note)) tdA.innerHTML += '<p class="asset-note">' + esc(L(it.note)) + "</p>";
     tr.appendChild(tdA);
 
     if (isVideo) {
       var tdDur = document.createElement("td");
       tdDur.innerHTML = it.duration ? '<span class="dur">' + esc(it.duration) + "</span>" : "";
       tr.appendChild(tdDur);
-      // notas ya van en la columna Asset? No: en videos, Asset=Video (title+?), notas aparte.
-      // Movemos la nota a la columna notas:
       var tdNotas = document.createElement("td");
       tdNotas.innerHTML = L(it.note) ? '<p class="asset-note">' + esc(L(it.note)) + "</p>" : "";
-      // quitar la nota duplicada del título
-      tdA.innerHTML = '<p class="asset-title">' + esc(L(it.title)) + "</p>";
       tr.appendChild(tdNotas);
     } else {
       var tdM = document.createElement("td");
@@ -233,11 +242,9 @@
       tr.appendChild(tdM);
     }
 
-    // Links
     var tdL = document.createElement("td");
     tdL.appendChild(renderLinks(sec, it));
     tr.appendChild(tdL);
-
     return tr;
   }
 
@@ -246,20 +253,13 @@
     box.className = "medida";
     if (!medida) return box;
     medida.split("·").forEach(function (tok) {
-      tok = tok.trim();
-      if (!tok) return;
+      tok = tok.trim(); if (!tok) return;
       var span = document.createElement("span");
       var m = tok.match(/^(\d+)[×x](\d+)$/);
       if (m) {
-        span.className = "mbadge dim";
-        span.textContent = tok;
-        span.addEventListener("click", function () {
-          openTemplate(parseInt(m[1], 10), parseInt(m[2], 10), titleForModal);
-        });
-      } else {
-        span.className = "mbadge plain";
-        span.textContent = tok;
-      }
+        span.className = "mbadge dim"; span.textContent = tok;
+        span.addEventListener("click", function () { openTemplate(+m[1], +m[2], titleForModal); });
+      } else { span.className = "mbadge plain"; span.textContent = tok; }
       box.appendChild(span);
     });
     return box;
@@ -274,52 +274,50 @@
       var storeKey = keyOf(sec.id, it.id) + "::link" + idx;
       var url = lk.url || linkStore[storeKey] || "";
       var custom = !lk.url && !!linkStore[storeKey];
+      if (!url && !isEdit()) return;               // lectura: ocultar links sin cargar
       var row = document.createElement("span");
       row.className = "link-row";
       if (url) {
         var a = document.createElement("a");
         a.href = url; a.target = "_blank"; a.rel = "noopener";
-        a.textContent = L(lk.label);
-        if (custom) a.className = "link-custom";
+        a.textContent = L(lk.label); if (custom) a.className = "link-custom";
         row.appendChild(a);
-        var edit = document.createElement("button");
-        edit.className = "link-edit"; edit.textContent = "✎";
-        edit.title = lang === "es" ? "Editar link" : "Edit link";
-        edit.addEventListener("click", function () { editCustomLink(storeKey, t); });
-        if (!lk.url) row.appendChild(edit);   // solo editable si no viene fijo del config
+        if (isEdit() && !lk.url) row.appendChild(editBtn(storeKey, t));
       } else {
         var pend = document.createElement("button");
-        pend.className = "link-pending";
-        pend.textContent = L(lk.label) + " ·+";
-        pend.title = t.setLink;
+        pend.className = "link-pending"; pend.textContent = L(lk.label) + " ·+"; pend.title = t.setLink;
         pend.addEventListener("click", function () { editCustomLink(storeKey, t); });
         row.appendChild(pend);
       }
       box.appendChild(row);
     });
 
-    // Botón "+" para agregar un link libre (elemento suelto dentro del grupo)
+    // link libre (elemento suelto del grupo)
     var freeKey = keyOf(sec.id, it.id) + "::free";
     if (linkStore[freeKey]) {
       var frow = document.createElement("span");
       frow.className = "link-row";
       var fa = document.createElement("a");
       fa.href = linkStore[freeKey]; fa.target = "_blank"; fa.rel = "noopener";
-      fa.className = "link-custom"; fa.textContent = "🔗 " + (lang === "es" ? "link" : "link");
+      fa.className = "link-custom"; fa.textContent = "🔗 " + (lang === "es" ? "Material" : "Material");
       frow.appendChild(fa);
-      var fe = document.createElement("button");
-      fe.className = "link-edit"; fe.textContent = "✎";
-      fe.addEventListener("click", function () { editCustomLink(freeKey, t); });
-      frow.appendChild(fe);
+      if (isEdit()) frow.appendChild(editBtn(freeKey, t));
       box.appendChild(frow);
-    } else {
+    } else if (isEdit()) {
       var add = document.createElement("button");
-      add.className = "add-link"; add.textContent = t.pending;
+      add.className = "add-link"; add.textContent = t.addLink;
       add.addEventListener("click", function () { editCustomLink(freeKey, t); });
       box.appendChild(add);
     }
-
     return box;
+  }
+
+  function editBtn(storeKey, t) {
+    var b = document.createElement("button");
+    b.className = "link-edit"; b.textContent = "✎";
+    b.title = lang === "es" ? "Editar link" : "Edit link";
+    b.addEventListener("click", function () { editCustomLink(storeKey, t); });
+    return b;
   }
 
   function editCustomLink(storeKey, t) {
@@ -332,24 +330,52 @@
   }
 
   function promptFolder(sec) {
-    var t = UI[lang];
-    var cur = linkStore["folder::" + sec.id] || "";
+    var cur = linkStore["folder::" + sec.id] || sec.folderUrl || "";
     var val = window.prompt(lang === "es"
       ? "Link de la carpeta de material de esta sección:"
       : "Folder link for this section's material:", cur);
     if (val === null) return;
     val = val.trim();
-    if (val) { sec.folderUrl = val; linkStore["folder::" + sec.id] = val; }
-    else { delete linkStore["folder::" + sec.id]; }
+    if (val) linkStore["folder::" + sec.id] = val; else delete linkStore["folder::" + sec.id];
     save(LS_LINKS, linkStore); render();
+  }
+
+  /* ---------------- Publicar (exportar config.js) ---------------- */
+  function publish() {
+    var out = { meta: CFG.meta, sections: [] };
+    CFG.sections.forEach(function (s) {
+      var sec = { id: s.id, kind: s.kind, title: s.title,
+        folderUrl: linkStore["folder::" + s.id] || s.folderUrl || "", items: [] };
+      s.items.forEach(function (it) {
+        var item = { id: it.id, status: statusOf(s.id, it), p: it.p, title: it.title,
+          note: it.note || { es: "", en: "" } };
+        if (it.optional) item.optional = true;
+        if (s.kind === "video") item.duration = it.duration || ""; else item.medida = it.medida || "";
+        item.links = (it.links || []).map(function (lk, idx) {
+          var sk = keyOf(s.id, it.id) + "::link" + idx;
+          return { label: lk.label, url: lk.url || linkStore[sk] || "" };
+        });
+        var freeKey = keyOf(s.id, it.id) + "::free";
+        if (linkStore[freeKey]) item.links.push({ label: { es: "Material", en: "Material" }, url: linkStore[freeKey] });
+        sec.items.push(item);
+      });
+      out.sections.push(sec);
+    });
+    var body = "/* Banana Airways — config generado desde la vista (Publicar).\n" +
+               "   Reemplazá config.js del repo con este archivo y commiteá. */\n" +
+               "window.MATERIALS_CONFIG = " + JSON.stringify(out, null, 2) + ";\n";
+    var blob = new Blob([body], { type: "text/javascript" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "config.js";
+    document.body.appendChild(a); a.click(); a.remove();
+    window.alert(UI[lang].published);
   }
 
   /* ---------------- Template modal ---------------- */
   function openTemplate(w, h, title) {
     var t = UI[lang];
     document.getElementById("modal-title").textContent = t.tpl + " · " + title + "  (" + w + "×" + h + ")";
-    var maxW = Math.min(window.innerWidth * 0.8, 760);
-    var maxH = Math.min(window.innerHeight * 0.6, 520);
+    var maxW = Math.min(window.innerWidth * 0.8, 760), maxH = Math.min(window.innerHeight * 0.6, 520);
     var scale = Math.min(maxW / w, maxH / h, 1);
     var box = document.getElementById("tpl-box");
     box.style.width = Math.round(w * scale) + "px";
@@ -364,21 +390,26 @@
   document.getElementById("btn-es").addEventListener("click", function () { setLang("es"); });
   function setLang(l) { lang = l; localStorage.setItem(LS_LANG, l); render(); }
 
-  document.getElementById("modal-close").addEventListener("click", closeTemplate);
-  document.getElementById("modal-back").addEventListener("click", function (e) {
-    if (e.target === this) closeTemplate();
+  document.getElementById("btn-pdf").addEventListener("click", function () { window.print(); });
+  document.getElementById("btn-publish").addEventListener("click", publish);
+
+  document.getElementById("btn-mode").addEventListener("click", function () {
+    mode = isEdit() ? "read" : "edit";
+    var p = new URLSearchParams(location.search);
+    if (mode === "edit") p.set("edit", "1"); else p.delete("edit");
+    var qs = p.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    render();
   });
+
+  document.getElementById("modal-close").addEventListener("click", closeTemplate);
+  document.getElementById("modal-back").addEventListener("click", function (e) { if (e.target === this) closeTemplate(); });
 
   document.getElementById("reset-btn").addEventListener("click", function () {
     if (!window.confirm(UI[lang].resetConfirm)) return;
     statusOverride = {}; linkStore = {}; collapsed = {};
     save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_COLLAP, collapsed);
     render();
-  });
-
-  // restaurar carpetas guardadas a mano
-  CFG.sections.forEach(function (s) {
-    if (!s.folderUrl && linkStore["folder::" + s.id]) s.folderUrl = linkStore["folder::" + s.id];
   });
 
   render();

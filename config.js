@@ -28,15 +28,13 @@ window.MATERIALS_CONFIG = {
   meta: {
     title:    { es: "Banana Airways · Assets de marketing",
                 en: "Banana Airways · Marketing assets" },
-    subtitle: { es: "Eggscape Entertainment · Push de la demo y lanzamiento (Q1 2027) · Estado revisado el 01/10/2026 contra Steam, el sitio y el juego",
-                en: "Eggscape Entertainment · Demo push & launch (Q1 2027) · Status reviewed 10/01/2026 against Steam, the site and the game" },
+    subtitle: { es: "", en: "" },
     priorities: [
       { key: "P1", label: { es: "Empezar ya", en: "Start now" } },
       { key: "P2", label: { es: "Antes del push de la demo", en: "Before the demo push" } },
       { key: "P3", label: { es: "Después", en: "Later" } }
     ],
-    hint: { es: "Hacé clic en una medida punteada para ver la plantilla a escala. Hacé clic en el estado para cambiarlo.",
-            en: "Click a dotted size to preview the template at scale. Click a status to change it." }
+    hint: { es: "", en: "" }
   },
 
   sections: [
@@ -103,10 +101,7 @@ window.MATERIALS_CONFIG = {
           links: [ { label: { es: "Especificación oficial", en: "Official spec" }, url: "" } ] },
         { id: "event-art", status: "falta", p: "P2", title: { es: "Arte de eventos y anuncios", en: "Event & announcement art" },
           note: { es: "", en: "" }, medida: "800×450 · 1920×622",
-          links: [ { label: { es: "Especificación oficial", en: "Official spec" }, url: "" } ] },
-        { id: "loc-capsules", status: "falta", p: "P3", title: { es: "Capsules localizadas", en: "Localized capsules" },
-          note: { es: "zh-CN · ja · ko · pt-BR · ru · de · es", en: "zh-CN · ja · ko · pt-BR · ru · de · es" }, medida: "920×430",
-          links: [ { label: { es: "Ver actual", en: "View current" }, url: "" }, { label: { es: "Especificación oficial", en: "Official spec" }, url: "" } ] }
+          links: [ { label: { es: "Especificación oficial", en: "Official spec" }, url: "" } ] }
       ] },
 
     /* ------------------------------------------------------------------ */
@@ -131,7 +126,7 @@ window.MATERIALS_CONFIG = {
       title: { es: "Sitio y prensa", en: "Site & press" },
       folderUrl: "",
       items: [
-        { id: "website", status: "hecho", p: "P1", title: { es: "Sitio web", en: "Website" },
+        { id: "website", status: "actualizar", p: "P1", title: { es: "Sitio web", en: "Website" },
           note: { es: "", en: "" }, medida: "",
           links: [ { label: { es: "bananaairways.com", en: "bananaairways.com" }, url: "" } ] },
         { id: "presskit-page", status: "falta", p: "P1", title: { es: "Página de press kit y descarga", en: "Press kit & download page" },
@@ -140,8 +135,6 @@ window.MATERIALS_CONFIG = {
           note: { es: "Una línea en el sitio, 50 palabras en la descripción corta de Steam, 251 en About this game", en: "" }, medida: "", links: [] },
         { id: "factsheet", status: "falta", p: "P1", title: { es: "Ficha técnica", en: "Fact sheet" },
           note: { es: "", en: "" }, medida: "", links: [] },
-        { id: "press-drafts", status: "falta", p: "P2", title: { es: "Borradores de comunicados", en: "Press release drafts" },
-          note: { es: "Demo, anuncio del publisher, fecha de salida", en: "Demo, publisher announcement, release date" }, medida: "", links: [] },
         { id: "team-photo", status: "falta", p: "P3", title: { es: "Foto del equipo y bios", en: "Team photo & bios" },
           note: { es: "", en: "" }, medida: "", links: [] }
       ] },
@@ -154,11 +147,11 @@ window.MATERIALS_CONFIG = {
         { id: "profiles", status: "hecho", p: "P1", title: { es: "Perfiles en redes", en: "Social profiles" },
           note: { es: "Discord · TikTok · YouTube · Instagram · X", en: "Discord · TikTok · YouTube · Instagram · X" }, medida: "",
           links: [ { label: { es: "Discord", en: "Discord" }, url: "" }, { label: { es: "TikTok", en: "TikTok" }, url: "" }, { label: { es: "YouTube", en: "YouTube" }, url: "" }, { label: { es: "Instagram", en: "Instagram" }, url: "" }, { label: { es: "X", en: "X" }, url: "" }, { label: { es: "Especificación oficial", en: "Official spec" }, url: "" } ] },
-        { id: "short-video-tpl", status: "falta", p: "P1", title: { es: "Plantillas para video corto", en: "Short-video templates" },
-          note: { es: "Estilo de subtítulos, zonas seguras, placa final", en: "Subtitle style, safe zones, end card" }, medida: "1080×1920", links: [] },
-        { id: "discord-emotes", status: "falta", p: "P2", title: { es: "Emotes y stickers de Discord", en: "Discord emotes & stickers" },
+        { id: "placa-final", status: "falta", p: "P1", title: { es: "Placa final", en: "End card" },
+          note: { es: "A generar", en: "To generate" }, medida: "1080×1920", links: [] },
+        { id: "discord-emotes", status: "falta", p: "P2", optional: true, title: { es: "Emotes y stickers de Discord", en: "Discord emotes & stickers" },
           note: { es: "", en: "" }, medida: "128×128 · 320×320", links: [] },
-        { id: "giphy", status: "falta", p: "P3", title: { es: "Pack de GIFs / stickers para GIPHY", en: "GIF / sticker pack for GIPHY" },
+        { id: "giphy", status: "falta", p: "P3", optional: true, title: { es: "Pack de GIFs / stickers para GIPHY", en: "GIF / sticker pack for GIPHY" },
           note: { es: "", en: "" }, medida: "", links: [] }
       ] },
 
@@ -174,9 +167,7 @@ window.MATERIALS_CONFIG = {
         { id: "wishlist-screen", status: "falta", p: "P1", title: { es: "Pantalla de wishlist al terminar la demo", en: "End-of-demo wishlist screen" },
           note: { es: "", en: "" }, medida: "1920×1080", links: [] },
         { id: "wishlist-button", status: "falta", p: "P1", title: { es: "Botón de wishlist en el menú principal", en: "Wishlist button in main menu" },
-          note: { es: "", en: "" }, medida: "", links: [] },
-        { id: "streamer-overlays", status: "falta", p: "P3", title: { es: "Pack de overlays para streamers", en: "Streamer overlay pack" },
-          note: { es: "", en: "" }, medida: "1920×1080", links: [] }
+          note: { es: "", en: "" }, medida: "", links: [] }
       ] },
 
     /* ------------------------------------------------------------------ */
@@ -189,23 +180,8 @@ window.MATERIALS_CONFIG = {
           links: [ { label: { es: "Ver en Steam", en: "View on Steam" }, url: "" } ] },
         { id: "gameplay-trailer", status: "falta", p: "P1", title: { es: "Trailer de gameplay / demo", en: "Gameplay / demo trailer" },
           duration: "60–75s", note: { es: 'Para el lanzamiento de la demo y Next Fest. Gameplay en los primeros 5 segundos, 4 jugadores, los problemas escalando, cierre con "Jugá la demo / Wishlist".', en: "" }, links: [] },
-        { id: "short-clips", status: "revisar", p: "P1", title: { es: "Clips cortos", en: "Short clips" },
-          duration: "8–25s · 9:16", note: { es: "TikTok, Shorts, Reels. 3–5 por semana, con subtítulos, un momento por clip. Las cuentas existen; revisar frecuencia de publicación.", en: "" },
-          links: [ { label: { es: "TikTok", en: "TikTok" }, url: "" }, { label: { es: "YouTube", en: "YouTube" }, url: "" } ], medida: "1080×1920" },
         { id: "trailer-cuts", status: "falta", p: "P2", title: { es: "Versiones cortas del trailer", en: "Short trailer cuts" },
-          duration: "30s · 15s · 6s", note: { es: "Para anuncios, redes y postulaciones a showcases. 16:9 y 9:16.", en: "" }, links: [] },
-        { id: "safety-parody", status: "falta", p: "P2", title: { es: "Parodia de video de seguridad", en: "Safety-video parody" },
-          duration: "60–90s", note: { es: "Un video de seguridad de aerolínea donde todo sale mal. Buena opción para el anuncio del publisher.", en: "" }, links: [] },
-        { id: "sizzle", status: "falta", p: "P2", title: { es: "Sizzle para showcases", en: "Showcase sizzle" },
-          duration: "30–60s", note: { es: "4K, sin voz en off, placa final neutra que el publisher pueda firmar.", en: "" }, links: [] },
-        { id: "team-match", status: "falta", p: "P2", title: { es: "Partida del equipo", en: "Team match" },
-          duration: "10–20 min", note: { es: "Cuatro del equipo con facecam jugando un vuelo. Les muestra a los creadores cómo se ve un stream.", en: "" }, links: [] },
-        { id: "broll", status: "falta", p: "P2", title: { es: "Pack de B-roll para prensa", en: "Press B-roll pack" },
-          duration: "5–10 min", note: { es: "Gameplay limpio 4K60, sin música ni voz, y sin HUD.", en: "" }, links: [] },
-        { id: "devlogs", status: "falta", p: "P3", title: { es: "Devlogs", en: "Devlogs" },
-          duration: "3–6 min", note: { es: "Detrás de escena mensual. Hacer crecer el canal de YouTube.", en: "" }, links: [] },
-        { id: "nextfest-stream", status: "falta", p: "P3", title: { es: "Stream en Next Fest", en: "Next Fest stream" },
-          duration: "60–120 min", note: { es: "El juego juega en vivo en la página de Steam durante el festival.", en: "" }, links: [] }
+          duration: "6s · 15s", note: { es: "Para redes sociales, en distintos formatos: 16:9 y 9:16.", en: "For social media, in 16:9 and 9:16." }, links: [] }
       ] }
   ]
 };
