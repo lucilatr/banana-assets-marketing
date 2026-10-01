@@ -12,7 +12,8 @@
   "priority": {
     "steam::event-art": "P1",
     "keyart::logo-versions": "P2",
-    "sitio::factsheet": "P2"
+    "sitio::factsheet": "P2",
+    "redes::discord-emotes": "P3"
   },
   "links": {
     "keyart::renders::free": "https://drive.google.com/drive/folders/1A7U2XQ7QDO_UGNi2797UvH0UxJdpT0jn?usp=drive_link",
@@ -97,5 +98,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-01T22:08:01.145Z"
+  "updated": "2026-10-01T22:08:15.283Z"
 }
