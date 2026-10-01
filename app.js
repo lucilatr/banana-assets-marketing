@@ -223,8 +223,11 @@
     var tr = document.createElement("tr");
     tr.className = (st === "hecho") ? "hecho" : "";
 
-    // Estado
+    // Estado (con la nota "qué actualizar" a la izquierda del chip)
     var tdSt = document.createElement("td");
+    tdSt.className = "estado-cell";
+    var naf = renderNoteAffordance(sec, it, st);
+    if (naf) tdSt.appendChild(naf);
     var btn = document.createElement("button");
     btn.className = "status-btn " + st;
     btn.textContent = t.st[st];
@@ -251,8 +254,6 @@
     var optTag = it.optional ? '<span class="opt-tag">' + t.optional + "</span>" : "";
     tdA.innerHTML = '<p class="asset-title">' + esc(L(it.title)) + optTag + "</p>";
     if (!isVideo && L(it.note)) tdA.innerHTML += '<p class="asset-note">' + esc(L(it.note)) + "</p>";
-    var naf = renderNoteAffordance(sec, it, st);
-    if (naf) tdA.querySelector(".asset-title").appendChild(naf);
     tr.appendChild(tdA);
 
     if (isVideo) {
