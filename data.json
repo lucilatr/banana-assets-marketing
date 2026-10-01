@@ -10,7 +10,8 @@
     "keyart::logo-versions": "revisar"
   },
   "priority": {
-    "steam::event-art": "P1"
+    "steam::event-art": "P1",
+    "keyart::logo-versions": "P2"
   },
   "links": {
     "keyart::renders::free": "https://drive.google.com/drive/folders/1A7U2XQ7QDO_UGNi2797UvH0UxJdpT0jn?usp=drive_link",
@@ -95,5 +96,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-01T22:07:31.904Z"
+  "updated": "2026-10-01T22:07:43.704Z"
 }
