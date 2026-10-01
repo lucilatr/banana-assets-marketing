@@ -37,6 +37,15 @@ window.MATERIALS_CONFIG = {
       { key: "P2", label: { es: "Antes del push de la demo", en: "Before the demo push" } },
       { key: "P3", label: { es: "Después", en: "Later" } }
     ],
+    // Personas asignables a tareas en Actualizar / Revisar / Falta (editable).
+    people: [
+      "JORGE TERESO",
+      "FEDERICO CARLINI",
+      "FERNANDO MALDONADO",
+      "LUCILA TROBBIANI",
+      "VALENTIN FRARE",
+      "AGUSTIN MARTINEZ"
+    ],
     hint: { es: "", en: "" }
   },
 

@@ -17,6 +17,7 @@
   var LS_STATUS = "banana-assets-status-v1";
   var LS_LINKS  = "banana-assets-links-v1";
   var LS_NOTES  = "banana-assets-notes-v1";
+  var LS_ASSIGN = "banana-assets-assign-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
   var LS_LANG   = "banana-assets-lang";
   var LS_TOKEN  = "banana-assets-gh-token";
@@ -25,6 +26,7 @@
   var statusOverride = load(LS_STATUS, {});
   var linkStore      = load(LS_LINKS, {});
   var noteStore      = load(LS_NOTES, {});   // notas "qué hay que actualizar" por item
+  var assignStore    = load(LS_ASSIGN, {});  // personas asignadas por item (array de nombres)
   var collapsed      = load(LS_COLLAP, {});
   var lang           = localStorage.getItem(LS_LANG) || "es";
 
@@ -57,7 +59,7 @@
       autoSaved: "✓ Guardado", autoError: "⚠ Error (clic para reintentar)",
       autoTip: "Se guarda solo. Clic para guardar ahora.",
       noteTitle: "Qué hay que actualizar", notePlaceholder: "Escribí acá qué hay que actualizar…",
-      noteSave: "Guardar nota"
+      noteSave: "Guardar nota", assignTitle: "Asignar a"
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -82,7 +84,7 @@
       autoSaved: "✓ Saved", autoError: "⚠ Error (click to retry)",
       autoTip: "Saves automatically. Click to save now.",
       noteTitle: "What needs updating", notePlaceholder: "Write what needs updating…",
-      noteSave: "Save note"
+      noteSave: "Save note", assignTitle: "Assign to"
     }
   };
 
@@ -254,6 +256,8 @@
     var optTag = it.optional ? '<span class="opt-tag">' + t.optional + "</span>" : "";
     tdA.innerHTML = '<p class="asset-title">' + esc(L(it.title)) + optTag + "</p>";
     if (!isVideo && L(it.note)) tdA.innerHTML += '<p class="asset-note">' + esc(L(it.note)) + "</p>";
+    var asg = renderAssignees(sec, it, st);
+    if (asg) tdA.appendChild(asg);
     tr.appendChild(tdA);
 
     if (isVideo) {
@@ -371,7 +375,7 @@
   // data.json guarda SOLO lo que cambia: estados + links. La estructura y los
   // textos viven en config.js. Así el público ve lo último que guardaste.
   function currentData() {
-    return { status: statusOverride, links: linkStore, notes: noteStore, updated: new Date().toISOString() };
+    return { status: statusOverride, links: linkStore, notes: noteStore, assign: assignStore, updated: new Date().toISOString() };
   }
 
   function applyData(d) {
@@ -379,6 +383,7 @@
     if (d.status && typeof d.status === "object") { statusOverride = d.status; save(LS_STATUS, statusOverride); }
     if (d.links  && typeof d.links  === "object") { linkStore = d.links; save(LS_LINKS, linkStore); }
     if (d.notes  && typeof d.notes  === "object") { noteStore = d.notes; save(LS_NOTES, noteStore); }
+    if (d.assign && typeof d.assign === "object") { assignStore = d.assign; save(LS_ASSIGN, assignStore); }
   }
 
   // Al abrir: traer data.json del repo (versión pública/última guardada).
@@ -410,7 +415,7 @@
   // Marca que hay cambios y programa el guardado automático (sin botón).
   function markDirty() {
     dirty = true;
-    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore);
+    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore);
     scheduleAutosave();
     setSaveState("pending");
   }
@@ -477,6 +482,96 @@
     el.className = "save-indicator " + s;
   }
   function updateSaveBtn() { setSaveState(saveState); }
+
+  /* ---------------- Asignación de personas ---------------- */
+  var ASSIGN_COLORS = ["#d98324", "#2fa360", "#5b53c7", "#c0392b", "#0e7c86", "#b8860b"];
+  function initials(name) {
+    var p = String(name).trim().split(/\s+/);
+    return ((p[0] || "")[0] || "") + ((p[1] || "")[0] || "");
+  }
+  function colorFor(name) {
+    var people = (CFG.meta.people || []);
+    var i = people.indexOf(name);
+    if (i < 0) { i = 0; for (var k = 0; k < name.length; k++) i += name.charCodeAt(k); }
+    return ASSIGN_COLORS[i % ASSIGN_COLORS.length];
+  }
+  function fillAssignChips(chips, key) {
+    chips.innerHTML = "";
+    (assignStore[key] || []).forEach(function (name) {
+      var c = document.createElement("span");
+      c.className = "assign-chip";
+      c.style.background = colorFor(name);
+      c.textContent = initials(name).toUpperCase();
+      c.title = name;
+      chips.appendChild(c);
+    });
+  }
+  // Aparece cuando el item está en Actualizar / Revisar / Falta (o ya tiene gente).
+  function renderAssignees(sec, it, st) {
+    var key = keyOf(sec.id, it.id);
+    var eligible = (st === "actualizar" || st === "revisar" || st === "falta");
+    var assigned = assignStore[key] || [];
+    if (!eligible && assigned.length === 0) return null;
+    if (!isEdit() && assigned.length === 0) return null;
+    var box = document.createElement("div");
+    box.className = "assignees";
+    var chips = document.createElement("span");
+    chips.className = "assign-chips";
+    fillAssignChips(chips, key);
+    box.appendChild(chips);
+    if (isEdit() && eligible) {
+      var add = document.createElement("button");
+      add.className = "assign-add";
+      add.textContent = assigned.length ? "+" : (lang === "es" ? "+ Asignar" : "+ Assign");
+      add.title = lang === "es" ? "Asignar personas" : "Assign people";
+      add.addEventListener("click", function (e) { e.stopPropagation(); openAssignPicker(add, key, chips); });
+      box.appendChild(add);
+    }
+    return box;
+  }
+
+  function openAssignPicker(anchor, key, chips) {
+    var pop = document.getElementById("assign-pop");
+    document.getElementById("assign-pop-title").textContent = UI[lang].assignTitle;
+    var list = document.getElementById("assign-list");
+    list.innerHTML = "";
+    (CFG.meta.people || []).forEach(function (name) {
+      var assigned = assignStore[key] || [];
+      var lbl = document.createElement("label");
+      lbl.className = "assign-opt";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = assigned.indexOf(name) !== -1;
+      cb.addEventListener("change", function () {
+        var arr = (assignStore[key] || []).slice();
+        if (cb.checked) { if (arr.indexOf(name) === -1) arr.push(name); }
+        else { arr = arr.filter(function (n) { return n !== name; }); }
+        if (arr.length) assignStore[key] = arr; else delete assignStore[key];
+        markDirty();
+        fillAssignChips(chips, key);
+      });
+      var av = document.createElement("span");
+      av.className = "assign-chip"; av.style.background = colorFor(name);
+      av.textContent = initials(name).toUpperCase();
+      var nm = document.createElement("span"); nm.textContent = name;
+      lbl.appendChild(cb); lbl.appendChild(av); lbl.appendChild(nm);
+      list.appendChild(lbl);
+    });
+    pop.classList.add("open");
+    positionPop(pop, anchor);
+  }
+  function closeAssign() { document.getElementById("assign-pop").classList.remove("open"); }
+
+  // posiciona un popover flotante cerca de un ancla, dentro de la pantalla
+  function positionPop(pop, anchor) {
+    var r = anchor.getBoundingClientRect();
+    var w = pop.offsetWidth || 240, h = pop.offsetHeight || 180;
+    var left = Math.min(r.left, window.innerWidth - w - 12);
+    var top = r.bottom + 6;
+    if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 6);
+    pop.style.left = Math.max(12, left) + "px";
+    pop.style.top = top + "px";
+  }
 
   /* ---------------- Nota "qué actualizar" ---------------- */
   // Aparece un ícono cuando el item está en "Actualizar" (o ya tiene nota).
@@ -569,19 +664,22 @@
 
   document.getElementById("note-save").addEventListener("click", saveNote);
   document.getElementById("note-cancel").addEventListener("click", closeNote);
-  // cerrar el popover al clickear afuera o con Escape
+  // cerrar los popovers al clickear afuera o con Escape
   document.addEventListener("click", function (e) {
-    var pop = document.getElementById("note-pop");
-    if (!pop.classList.contains("open")) return;
-    if (pop.contains(e.target) || (e.target.classList && e.target.classList.contains("note-btn"))) return;
-    closeNote();
+    var cls = e.target.classList || { contains: function () { return false; } };
+    var np = document.getElementById("note-pop");
+    if (np.classList.contains("open") && !np.contains(e.target) && !cls.contains("note-btn")) closeNote();
+    var ap = document.getElementById("assign-pop");
+    if (ap.classList.contains("open") && !ap.contains(e.target) && !cls.contains("assign-add")) closeAssign();
   });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeNote(); closeTemplate(); } });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { closeNote(); closeAssign(); closeTemplate(); }
+  });
 
   document.getElementById("reset-btn").addEventListener("click", function () {
     if (!window.confirm(UI[lang].resetConfirm)) return;
-    statusOverride = {}; linkStore = {}; noteStore = {}; collapsed = {};
-    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_COLLAP, collapsed);
+    statusOverride = {}; linkStore = {}; noteStore = {}; assignStore = {}; collapsed = {};
+    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore); save(LS_COLLAP, collapsed);
     markDirty(); render();
   });
 

@@ -135,6 +135,24 @@
     .note-pop-actions .save { background: var(--accent); }
     .note-pop-actions .save:hover { background: #ffdf5a; }
 
+    /* asignación de personas */
+    .assignees { display: flex; align-items: center; gap: 7px; margin-top: 7px; flex-wrap: wrap; }
+    .assign-chips { display: inline-flex; gap: 3px; }
+    .assign-chip { display: inline-flex; align-items: center; justify-content: center; width: 23px; height: 23px;
+      border-radius: 50%; font-size: .62rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .assign-add { font-size: .72rem; font-weight: 700; color: var(--ink-soft); background: #fff;
+      border: 1px dashed var(--line); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+    .assign-add:hover { border-color: var(--ink); color: var(--ink); }
+    .assign-pop { position: fixed; z-index: 60; display: none; width: 236px; background: #fff;
+      border: 1.5px solid var(--ink); border-radius: 12px; box-shadow: 0 10px 30px rgba(31,36,48,.2); padding: 10px; }
+    .assign-pop.open { display: block; }
+    .assign-pop-title { margin: 0 0 7px; font-size: .68rem; font-weight: 800; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--ink-soft); }
+    .assign-opt { display: flex; align-items: center; gap: 9px; padding: 5px 4px; border-radius: 8px;
+      cursor: pointer; font-size: .82rem; }
+    .assign-opt:hover { background: var(--panel); }
+    .assign-opt input { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+
     td.p-cell { font-weight: 800; }
     .p-cell.P1 { color: var(--p1); } .p-cell.P2 { color: var(--p2); } .p-cell.P3 { color: var(--p3); }
 
@@ -194,7 +212,7 @@
     @media print {
       .toolbar, .lang-toggle, #reset-btn, .section-caret,
       .add-link, .link-pending, .link-edit, .folder-link.empty, .modal-back,
-      .note-btn, .note-pop { display: none !important; }
+      .note-btn, .note-pop, .assign-add, .assign-pop { display: none !important; }
       .wrap { max-width: none; padding: 0; }
       .section.collapsed table { display: table !important; }
       .section.collapsed .section-caret { display: none; }
@@ -239,6 +257,11 @@
       <p id="footer-text"></p>
       <button class="reset" id="reset-btn"></button>
     </footer>
+  </div>
+
+  <div class="assign-pop" id="assign-pop">
+    <p class="assign-pop-title" id="assign-pop-title"></p>
+    <div id="assign-list"></div>
   </div>
 
   <div class="note-pop" id="note-pop">
