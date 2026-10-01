@@ -25,7 +25,8 @@
     "steam::vertical::free": "https://drive.google.com/file/d/1yoSxMs-8D4YWBrbo0pTMHO_G3ixYo4Fl/view?usp=drive_link",
     "steam::lib-capsule::free": "https://drive.google.com/file/d/1OhXdjfE0oVdkcXaQFaaJFNIAm8ghpIjL/view?usp=drive_link",
     "steam::lib-hero::free": "https://drive.google.com/file/d/1mhqlhcYup1rt2n05zyWcIslR2rL0wb9V/view?usp=drive_link",
-    "keyart::brand-guide::free": "https://drive.google.com/file/d/1Is_zLcKmeDskCMbEUostxQJSYYTmOTBr/view?usp=drive_link"
+    "keyart::brand-guide::free": "https://drive.google.com/file/d/1Is_zLcKmeDskCMbEUostxQJSYYTmOTBr/view?usp=drive_link",
+    "steam::demo-page::free": "https://store.steampowered.com/app/4900690/Banana_Airways_Demo/"
   },
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
@@ -91,5 +92,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-01T21:47:08.014Z"
+  "updated": "2026-10-01T21:55:40.888Z"
 }
