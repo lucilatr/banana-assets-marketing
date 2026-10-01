@@ -30,7 +30,8 @@
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
     "sitio::website": "LOGO Y WALLPAPER",
-    "steam::event-art": "ANUNCIO DEMO"
+    "steam::event-art": "ANUNCIO DEMO",
+    "sitio::presskit-page": "PONER BOTON EN LA PAGINA"
   },
   "assign": {
     "captura::clip-library": [
@@ -59,5 +60,5 @@
       "VALENTIN FRARE"
     ]
   },
-  "updated": "2026-10-01T21:45:34.012Z"
+  "updated": "2026-10-01T21:45:49.296Z"
 }
