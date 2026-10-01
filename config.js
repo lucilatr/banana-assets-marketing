@@ -113,7 +113,7 @@ window.MATERIALS_CONFIG = {
       folderUrl: "",
       items: [
         { id: "keyart-main", status: "revisar", p: "P1", title: { es: "Key art principal", en: "Main key art" },
-          note: { es: "Sólo hay exportaciones aplanadas: las capsules y una sin texto de 3840×1240 (el library hero). Hay que pedirle al ilustrador el master por capas en 16:9.", en: "" }, medida: "3840×2160", links: [] },
+          note: { es: "Master de las capsules", en: "Master de las capsules" }, medida: "3840×2160", links: [] },
         { id: "logo-versions", status: "hecho", p: "P1", title: { es: "Versiones de logo", en: "Logo versions" },
           note: { es: "Apilado, horizontal y monograma BA, cada uno en color, negro y blanco. SVG + PNG.", en: "" }, medida: "SVG + PNG", links: [] },
         { id: "renders", status: "hecho", p: "P2", title: { es: "Renders de personajes y pasajeros", en: "Character & passenger renders" },
