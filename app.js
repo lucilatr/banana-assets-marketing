@@ -100,7 +100,7 @@
       noteSave: "Save note", assignTitle: "Assign to",
       filterHide: "Click to hide this status", filterShow: "Click to show it again",
       filterEmpty: "No items to show with the current filter.",
-      filterBy: "Filter by:", byStatus: "Status", byPerson: "Person",
+      filterBy: "Filter by:", byStatus: "Status", byPerson: "Assigned",
       filterClear: "Clear filters", filterClearTip: "Remove all filters (status and person)",
       tlTitle: "Timeline", tlPending: "Left to create:", tlToday: "Today", tlTbd: "TBD"
     }
