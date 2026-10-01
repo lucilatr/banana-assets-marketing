@@ -18,6 +18,7 @@
   var LS_LINKS  = "banana-assets-links-v1";
   var LS_NOTES  = "banana-assets-notes-v1";
   var LS_ASSIGN = "banana-assets-assign-v1";
+  var LS_FILTER = "banana-assets-filter-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
   var LS_LANG   = "banana-assets-lang";
   var LS_TOKEN  = "banana-assets-gh-token";
@@ -27,6 +28,7 @@
   var linkStore      = load(LS_LINKS, {});
   var noteStore      = load(LS_NOTES, {});   // notas "qué hay que actualizar" por item
   var assignStore    = load(LS_ASSIGN, {});  // personas asignadas por item (array de nombres)
+  var hiddenStatus   = load(LS_FILTER, {});  // estados ocultos por el filtro (solo vista local)
   var collapsed      = load(LS_COLLAP, {});
   var lang           = localStorage.getItem(LS_LANG) || "es";
 
@@ -59,7 +61,9 @@
       autoSaved: "✓ Guardado", autoError: "⚠ Error (clic para reintentar)",
       autoTip: "Se guarda solo. Clic para guardar ahora.",
       noteTitle: "Nota", notePlaceholder: "Escribí una nota…",
-      noteSave: "Guardar nota", assignTitle: "Asignar a"
+      noteSave: "Guardar nota", assignTitle: "Asignar a",
+      filterHide: "Clic para ocultar este estado", filterShow: "Clic para volver a mostrarlo",
+      filterHint: "Clic en un estado para ocultarlo", filterEmpty: "No hay ítems para mostrar con el filtro actual."
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -84,7 +88,9 @@
       autoSaved: "✓ Saved", autoError: "⚠ Error (click to retry)",
       autoTip: "Saves automatically. Click to save now.",
       noteTitle: "Note", notePlaceholder: "Write a note…",
-      noteSave: "Save note", assignTitle: "Assign to"
+      noteSave: "Save note", assignTitle: "Assign to",
+      filterHide: "Click to hide this status", filterShow: "Click to show it again",
+      filterHint: "Click a status to hide it", filterEmpty: "No items to show with the current filter."
     }
   };
 
@@ -128,7 +134,10 @@
 
     var root = document.getElementById("sections");
     root.innerHTML = "";
-    CFG.sections.forEach(function (sec) { root.appendChild(renderSection(sec)); });
+    CFG.sections.forEach(function (sec) { var el = renderSection(sec); if (el) root.appendChild(el); });
+    if (!root.children.length) {
+      root.innerHTML = '<p class="empty-filter">' + UI[lang].filterEmpty + "</p>";
+    }
 
     renderProgress();
   }
@@ -143,11 +152,30 @@
 
   function renderSummary() {
     var t = UI[lang], c = counts();
-    document.getElementById("summary").innerHTML =
-      '<span class="chip hecho">' + t.st.hecho + "</span><span class='cnt'>" + c.hecho + " " + t.done + " ·</span>" +
-      '<span class="chip actualizar">' + t.st.actualizar + "</span><span class='cnt'>" + c.actualizar + " " + t.update + " ·</span>" +
-      '<span class="chip revisar">' + t.st.revisar + "</span><span class='cnt'>" + c.revisar + " " + t.review + " ·</span>" +
-      '<span class="chip falta">' + t.st.falta + "</span><span class='cnt'>" + c.falta + " " + t.missing + "</span>";
+    var el = document.getElementById("summary");
+    el.innerHTML = "";
+    var rows = [
+      { k: "hecho",      n: c.hecho,      w: t.done },
+      { k: "actualizar", n: c.actualizar, w: t.update },
+      { k: "revisar",    n: c.revisar,    w: t.review },
+      { k: "falta",      n: c.falta,      w: t.missing }
+    ];
+    rows.forEach(function (r) {
+      var b = document.createElement("button");
+      b.className = "filter-chip" + (hiddenStatus[r.k] ? " off" : "");
+      b.title = hiddenStatus[r.k] ? t.filterShow : t.filterHide;
+      b.innerHTML = '<span class="chip ' + r.k + '">' + t.st[r.k] + "</span>" +
+                    '<span class="cnt">' + r.n + " " + r.w + "</span>" +
+                    '<span class="eye">' + (hiddenStatus[r.k] ? "🚫" : "") + "</span>";
+      b.addEventListener("click", function () {
+        if (hiddenStatus[r.k]) delete hiddenStatus[r.k]; else hiddenStatus[r.k] = true;
+        save(LS_FILTER, hiddenStatus); render();
+      });
+      el.appendChild(b);
+    });
+    var hint = document.createElement("span");
+    hint.className = "filter-hint"; hint.textContent = t.filterHint;
+    el.appendChild(hint);
   }
 
   function renderLegend() {
@@ -169,6 +197,8 @@
   function renderSection(sec) {
     var t = UI[lang];
     var isVideo = sec.kind === "video";
+    var visible = sec.items.filter(function (it) { return !hiddenStatus[statusOf(sec.id, it)]; });
+    if (visible.length === 0) return null;    // toda la sección filtrada → no se muestra
     var done = sec.items.filter(function (it) { return statusOf(sec.id, it) === "hecho"; }).length;
     var isCollapsed = !!collapsed[sec.id];
 
@@ -213,7 +243,7 @@
                : '<th class="col-medida">' + t.colMedida + "</th>") +
       '<th class="col-links">' + t.colLinks + "</th></tr></thead>";
     var tbody = document.createElement("tbody");
-    sec.items.forEach(function (it) { tbody.appendChild(renderRow(sec, it, isVideo)); });
+    visible.forEach(function (it) { tbody.appendChild(renderRow(sec, it, isVideo)); });
     table.appendChild(tbody);
     wrap.appendChild(table);
     return wrap;

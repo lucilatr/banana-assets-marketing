@@ -57,6 +57,14 @@
     .chip.revisar   { background: var(--revisar-chip);   color: var(--revisar); }
     .chip.actualizar{ background: var(--actualizar-chip);color: var(--actualizar); }
     .summary .cnt { color: var(--ink-soft); }
+    .filter-chip { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid transparent;
+      font: inherit; font-size: .9rem; padding: 3px 7px; border-radius: 999px; cursor: pointer; }
+    .filter-chip:hover { background: var(--panel); border-color: var(--line); }
+    .filter-chip.off { opacity: .45; }
+    .filter-chip.off .chip { text-decoration: line-through; }
+    .filter-chip .eye { font-size: .72rem; }
+    .filter-hint { font-size: .78rem; color: var(--ink-soft); font-style: italic; margin-left: 4px; }
+    .empty-filter { color: var(--ink-soft); font-style: italic; padding: 20px 2px; }
 
     .legend { margin: 6px 0 0; display: flex; gap: 6px 18px; align-items: center; flex-wrap: wrap;
       font-size: .85rem; color: var(--ink-soft); }
@@ -212,7 +220,7 @@
     @media print {
       .toolbar, .lang-toggle, #reset-btn, .section-caret,
       .add-link, .link-pending, .link-edit, .folder-link.empty, .modal-back,
-      .note-btn, .note-pop, .assign-add, .assign-pop { display: none !important; }
+      .note-btn, .note-pop, .assign-add, .assign-pop, .filter-hint, .filter-chip .eye { display: none !important; }
       .wrap { max-width: none; padding: 0; }
       .section.collapsed table { display: table !important; }
       .section.collapsed .section-caret { display: none; }
