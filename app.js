@@ -16,6 +16,7 @@
   var CFG = window.MATERIALS_CONFIG;
   var LS_STATUS = "banana-assets-status-v1";
   var LS_LINKS  = "banana-assets-links-v1";
+  var LS_NOTES  = "banana-assets-notes-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
   var LS_LANG   = "banana-assets-lang";
   var LS_TOKEN  = "banana-assets-gh-token";
@@ -23,6 +24,7 @@
 
   var statusOverride = load(LS_STATUS, {});
   var linkStore      = load(LS_LINKS, {});
+  var noteStore      = load(LS_NOTES, {});   // notas "qué hay que actualizar" por item
   var collapsed      = load(LS_COLLAP, {});
   var lang           = localStorage.getItem(LS_LANG) || "es";
 
@@ -53,7 +55,9 @@
       noChanges: "No hay cambios para guardar.",
       autoIdle: "Autoguardado", autoPending: "Sin guardar…", autoSaving: "Guardando…",
       autoSaved: "✓ Guardado", autoError: "⚠ Error (clic para reintentar)",
-      autoTip: "Se guarda solo. Clic para guardar ahora."
+      autoTip: "Se guarda solo. Clic para guardar ahora.",
+      noteTitle: "Qué hay que actualizar", notePlaceholder: "Escribí acá qué hay que actualizar…",
+      noteSave: "Guardar nota"
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -76,7 +80,9 @@
       noChanges: "No changes to save.",
       autoIdle: "Autosave", autoPending: "Unsaved…", autoSaving: "Saving…",
       autoSaved: "✓ Saved", autoError: "⚠ Error (click to retry)",
-      autoTip: "Saves automatically. Click to save now."
+      autoTip: "Saves automatically. Click to save now.",
+      noteTitle: "What needs updating", notePlaceholder: "Write what needs updating…",
+      noteSave: "Save note"
     }
   };
 
@@ -245,6 +251,8 @@
     var optTag = it.optional ? '<span class="opt-tag">' + t.optional + "</span>" : "";
     tdA.innerHTML = '<p class="asset-title">' + esc(L(it.title)) + optTag + "</p>";
     if (!isVideo && L(it.note)) tdA.innerHTML += '<p class="asset-note">' + esc(L(it.note)) + "</p>";
+    var naf = renderNoteAffordance(sec, it, st);
+    if (naf) tdA.querySelector(".asset-title").appendChild(naf);
     tr.appendChild(tdA);
 
     if (isVideo) {
@@ -362,13 +370,14 @@
   // data.json guarda SOLO lo que cambia: estados + links. La estructura y los
   // textos viven en config.js. Así el público ve lo último que guardaste.
   function currentData() {
-    return { status: statusOverride, links: linkStore, updated: new Date().toISOString() };
+    return { status: statusOverride, links: linkStore, notes: noteStore, updated: new Date().toISOString() };
   }
 
   function applyData(d) {
     if (!d) return;
     if (d.status && typeof d.status === "object") { statusOverride = d.status; save(LS_STATUS, statusOverride); }
     if (d.links  && typeof d.links  === "object") { linkStore = d.links; save(LS_LINKS, linkStore); }
+    if (d.notes  && typeof d.notes  === "object") { noteStore = d.notes; save(LS_NOTES, noteStore); }
   }
 
   // Al abrir: traer data.json del repo (versión pública/última guardada).
@@ -400,7 +409,7 @@
   // Marca que hay cambios y programa el guardado automático (sin botón).
   function markDirty() {
     dirty = true;
-    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore);
+    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore);
     scheduleAutosave();
     setSaveState("pending");
   }
@@ -468,6 +477,60 @@
   }
   function updateSaveBtn() { setSaveState(saveState); }
 
+  /* ---------------- Nota "qué actualizar" ---------------- */
+  // Aparece un ícono cuando el item está en "Actualizar" (o ya tiene nota).
+  function renderNoteAffordance(sec, it, st) {
+    var key = keyOf(sec.id, it.id);
+    var note = noteStore[key] || "";
+    var show = (st === "actualizar") || !!note;
+    if (!show) return null;
+    if (!isEdit() && !note) return null;          // público sin nota → no muestra nada
+    var b = document.createElement("button");
+    b.className = "note-btn" + (note ? " has" : "");
+    b.textContent = note ? "📝" : "✎";
+    b.title = note ? note : (lang === "es" ? "Agregar nota" : "Add note");
+    b.addEventListener("click", function (e) { e.stopPropagation(); openNotePopover(b, key); });
+    return b;
+  }
+
+  var curNoteKey = null;
+  function openNotePopover(anchor, key) {
+    var t = UI[lang];
+    curNoteKey = key;
+    var pop = document.getElementById("note-pop");
+    var ta = document.getElementById("note-text");
+    document.getElementById("note-pop-title").textContent = t.noteTitle;
+    ta.value = noteStore[key] || "";
+    ta.readOnly = !isEdit();
+    ta.placeholder = t.notePlaceholder;
+    var sv = document.getElementById("note-save");
+    sv.style.display = isEdit() ? "" : "none";
+    sv.textContent = t.noteSave;
+    document.getElementById("note-cancel").textContent = t.close;
+
+    pop.classList.add("open");
+    // posicionar cerca del ícono, dentro de la pantalla
+    var r = anchor.getBoundingClientRect();
+    var w = 270, h = pop.offsetHeight || 170;
+    var left = Math.min(r.left, window.innerWidth - w - 12);
+    var top = r.bottom + 6;
+    if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 6);
+    pop.style.left = Math.max(12, left) + "px";
+    pop.style.top = top + "px";
+    if (isEdit()) ta.focus();
+  }
+
+  function saveNote() {
+    if (curNoteKey === null) return;
+    var val = document.getElementById("note-text").value.trim();
+    if (val) noteStore[curNoteKey] = val; else delete noteStore[curNoteKey];
+    markDirty(); closeNote(); render();
+  }
+  function closeNote() {
+    curNoteKey = null;
+    document.getElementById("note-pop").classList.remove("open");
+  }
+
   /* ---------------- Template modal ---------------- */
   function openTemplate(w, h, title) {
     var t = UI[lang];
@@ -503,10 +566,21 @@
   document.getElementById("modal-close").addEventListener("click", closeTemplate);
   document.getElementById("modal-back").addEventListener("click", function (e) { if (e.target === this) closeTemplate(); });
 
+  document.getElementById("note-save").addEventListener("click", saveNote);
+  document.getElementById("note-cancel").addEventListener("click", closeNote);
+  // cerrar el popover al clickear afuera o con Escape
+  document.addEventListener("click", function (e) {
+    var pop = document.getElementById("note-pop");
+    if (!pop.classList.contains("open")) return;
+    if (pop.contains(e.target) || (e.target.classList && e.target.classList.contains("note-btn"))) return;
+    closeNote();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeNote(); closeTemplate(); } });
+
   document.getElementById("reset-btn").addEventListener("click", function () {
     if (!window.confirm(UI[lang].resetConfirm)) return;
-    statusOverride = {}; linkStore = {}; collapsed = {};
-    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_COLLAP, collapsed);
+    statusOverride = {}; linkStore = {}; noteStore = {}; collapsed = {};
+    save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_COLLAP, collapsed);
     markDirty(); render();
   });
 

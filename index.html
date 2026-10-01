@@ -114,6 +114,26 @@
       text-transform: uppercase; color: var(--ink-soft); background: var(--panel);
       border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
 
+    /* nota "qué actualizar" */
+    .note-btn { margin-left: 8px; vertical-align: middle; cursor: pointer; font-size: .82rem;
+      line-height: 1; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line);
+      background: #fff; color: var(--ink-soft); }
+    .note-btn:hover { border-color: var(--ink); color: var(--ink); }
+    .note-btn.has { border-color: var(--actualizar); background: var(--actualizar-chip); color: var(--actualizar); }
+    .note-pop { position: fixed; z-index: 60; display: none; width: 270px; background: #fff;
+      border: 1.5px solid var(--ink); border-radius: 12px; box-shadow: 0 10px 30px rgba(31,36,48,.2); padding: 12px; }
+    .note-pop.open { display: block; }
+    .note-pop-title { margin: 0 0 7px; font-size: .68rem; font-weight: 800; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--actualizar); }
+    .note-pop textarea { width: 100%; min-height: 90px; box-sizing: border-box; resize: vertical;
+      border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; font-size: .88rem; }
+    .note-pop textarea[readonly] { background: var(--panel); }
+    .note-pop-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 9px; }
+    .note-pop-actions button { border: 1.5px solid var(--ink); background: #fff; border-radius: 8px;
+      padding: 5px 13px; font-weight: 700; font-size: .8rem; cursor: pointer; }
+    .note-pop-actions .save { background: var(--accent); }
+    .note-pop-actions .save:hover { background: #ffdf5a; }
+
     td.p-cell { font-weight: 800; }
     .p-cell.P1 { color: var(--p1); } .p-cell.P2 { color: var(--p2); } .p-cell.P3 { color: var(--p3); }
 
@@ -172,7 +192,8 @@
     /* ---------- Impresión / PDF ---------- */
     @media print {
       .toolbar, .lang-toggle, #reset-btn, .section-caret,
-      .add-link, .link-pending, .link-edit, .folder-link.empty, .modal-back { display: none !important; }
+      .add-link, .link-pending, .link-edit, .folder-link.empty, .modal-back,
+      .note-btn, .note-pop { display: none !important; }
       .wrap { max-width: none; padding: 0; }
       .section.collapsed table { display: table !important; }
       .section.collapsed .section-caret { display: none; }
@@ -217,6 +238,15 @@
       <p id="footer-text"></p>
       <button class="reset" id="reset-btn"></button>
     </footer>
+  </div>
+
+  <div class="note-pop" id="note-pop">
+    <p class="note-pop-title" id="note-pop-title"></p>
+    <textarea id="note-text"></textarea>
+    <div class="note-pop-actions">
+      <button class="save" id="note-save"></button>
+      <button id="note-cancel"></button>
+    </div>
   </div>
 
   <div class="modal-back" id="modal-back">
