@@ -58,7 +58,7 @@
       autoIdle: "Autoguardado", autoPending: "Sin guardar…", autoSaving: "Guardando…",
       autoSaved: "✓ Guardado", autoError: "⚠ Error (clic para reintentar)",
       autoTip: "Se guarda solo. Clic para guardar ahora.",
-      noteTitle: "Qué hay que actualizar", notePlaceholder: "Escribí acá qué hay que actualizar…",
+      noteTitle: "Nota", notePlaceholder: "Escribí una nota…",
       noteSave: "Guardar nota", assignTitle: "Asignar a"
     },
     en: {
@@ -83,7 +83,7 @@
       autoIdle: "Autosave", autoPending: "Unsaved…", autoSaving: "Saving…",
       autoSaved: "✓ Saved", autoError: "⚠ Error (click to retry)",
       autoTip: "Saves automatically. Click to save now.",
-      noteTitle: "What needs updating", notePlaceholder: "Write what needs updating…",
+      noteTitle: "Note", notePlaceholder: "Write a note…",
       noteSave: "Save note", assignTitle: "Assign to"
     }
   };
@@ -578,7 +578,8 @@
   function renderNoteAffordance(sec, it, st) {
     var key = keyOf(sec.id, it.id);
     var note = noteStore[key] || "";
-    var show = (st === "actualizar") || !!note;
+    var eligible = (st === "actualizar" || st === "revisar" || st === "falta");
+    var show = eligible || !!note;
     if (!show) return null;
     if (!isEdit() && !note) return null;          // público sin nota → no muestra nada
     var b = document.createElement("button");
