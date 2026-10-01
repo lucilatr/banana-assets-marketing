@@ -20,6 +20,8 @@
   var LS_PRIO   = "banana-assets-prio-v1";
   var LS_ASSIGN = "banana-assets-assign-v1";
   var LS_FILTER = "banana-assets-filter-v1";
+  var LS_FMODE  = "banana-assets-filtermode-v1";
+  var LS_PSEL   = "banana-assets-personsel-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
   var LS_LANG   = "banana-assets-lang";
   var LS_TOKEN  = "banana-assets-gh-token";
@@ -31,6 +33,8 @@
   var prioOverride   = load(LS_PRIO, {});    // prioridad cambiada por item (P1/P2/P3)
   var assignStore    = load(LS_ASSIGN, {});  // personas asignadas por item (array de nombres)
   var hiddenStatus   = load(LS_FILTER, {});  // estados ocultos por el filtro (solo vista local)
+  var filterMode     = localStorage.getItem(LS_FMODE) || "estado";  // "estado" | "persona"
+  var personSelected = load(LS_PSEL, {});    // personas elegidas en el filtro por persona
   var collapsed      = load(LS_COLLAP, {});
   var lang           = localStorage.getItem(LS_LANG) || "es";
 
@@ -65,7 +69,8 @@
       noteTitle: "Nota", notePlaceholder: "Escribí una nota…",
       noteSave: "Guardar nota", assignTitle: "Asignar a",
       filterHide: "Clic para ocultar este estado", filterShow: "Clic para volver a mostrarlo",
-      filterHint: "Clic en un estado para ocultarlo", filterEmpty: "No hay ítems para mostrar con el filtro actual."
+      filterEmpty: "No hay ítems para mostrar con el filtro actual.",
+      filterBy: "Filtrar por:", byStatus: "Estado", byPerson: "Persona", filterClear: "Limpiar"
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -92,7 +97,8 @@
       noteTitle: "Note", notePlaceholder: "Write a note…",
       noteSave: "Save note", assignTitle: "Assign to",
       filterHide: "Click to hide this status", filterShow: "Click to show it again",
-      filterHint: "Click a status to hide it", filterEmpty: "No items to show with the current filter."
+      filterEmpty: "No items to show with the current filter.",
+      filterBy: "Filter by:", byStatus: "Status", byPerson: "Person", filterClear: "Clear"
     }
   };
 
@@ -132,7 +138,7 @@
     document.getElementById("btn-publish").style.display = isEdit() ? "" : "none";
     updateSaveBtn();
 
-    renderSummary();
+    renderFilterBar();
     renderLegend();
 
     var root = document.getElementById("sections");
@@ -153,32 +159,83 @@
     return c;
   }
 
-  function renderSummary() {
-    var t = UI[lang], c = counts();
-    var el = document.getElementById("summary");
-    el.innerHTML = "";
-    var rows = [
-      { k: "hecho",      n: c.hecho,      w: t.done },
-      { k: "actualizar", n: c.actualizar, w: t.update },
-      { k: "revisar",    n: c.revisar,    w: t.review },
-      { k: "falta",      n: c.falta,      w: t.missing }
-    ];
-    rows.forEach(function (r) {
+  // ¿se ve este item con el filtro actual?
+  function itemVisible(sec, it) {
+    if (filterMode === "persona") {
+      var sel = (CFG.meta.people || []).filter(function (n) { return personSelected[n]; });
+      if (sel.length === 0) return true;                 // sin personas elegidas → se ven todos
+      var assigned = assignStore[keyOf(sec.id, it.id)] || [];
+      return assigned.some(function (n) { return personSelected[n]; });
+    }
+    return !hiddenStatus[statusOf(sec.id, it)];           // modo estado → ocultar los marcados
+  }
+
+  function renderFilterBar() {
+    var t = UI[lang];
+    var bar = document.getElementById("filterbar");
+    bar.innerHTML = "";
+
+    var lab = document.createElement("span");
+    lab.className = "filter-label"; lab.textContent = t.filterBy;
+    bar.appendChild(lab);
+
+    var seg = document.createElement("div");
+    seg.className = "filter-seg";
+    [["estado", t.byStatus], ["persona", t.byPerson]].forEach(function (pair) {
       var b = document.createElement("button");
-      b.className = "filter-chip" + (hiddenStatus[r.k] ? " off" : "");
-      b.title = hiddenStatus[r.k] ? t.filterShow : t.filterHide;
-      b.innerHTML = '<span class="chip ' + r.k + '">' + t.st[r.k] + "</span>" +
-                    '<span class="cnt">' + r.n + " " + r.w + "</span>" +
-                    '<span class="eye">' + (hiddenStatus[r.k] ? "🚫" : "") + "</span>";
+      b.className = "seg-btn" + (filterMode === pair[0] ? " active" : "");
+      b.textContent = pair[1];
       b.addEventListener("click", function () {
-        if (hiddenStatus[r.k]) delete hiddenStatus[r.k]; else hiddenStatus[r.k] = true;
-        save(LS_FILTER, hiddenStatus); render();
+        filterMode = pair[0]; localStorage.setItem(LS_FMODE, filterMode); render();
       });
-      el.appendChild(b);
+      seg.appendChild(b);
     });
-    var hint = document.createElement("span");
-    hint.className = "filter-hint"; hint.textContent = t.filterHint;
-    el.appendChild(hint);
+    bar.appendChild(seg);
+
+    var opts = document.createElement("div");
+    opts.className = "filter-options";
+    if (filterMode === "estado") {
+      ["hecho", "actualizar", "revisar", "falta"].forEach(function (k) {
+        var b = document.createElement("button");
+        b.className = "filter-chip" + (hiddenStatus[k] ? " off" : "");
+        b.title = hiddenStatus[k] ? t.filterShow : t.filterHide;
+        b.innerHTML = '<span class="chip ' + k + '">' + t.st[k] + "</span>" +
+                      (hiddenStatus[k] ? '<span class="eye">🚫</span>' : "");
+        b.addEventListener("click", function () {
+          if (hiddenStatus[k]) delete hiddenStatus[k]; else hiddenStatus[k] = true;
+          save(LS_FILTER, hiddenStatus); render();
+        });
+        opts.appendChild(b);
+      });
+    } else {
+      (CFG.meta.people || []).forEach(function (name) {
+        var on = !!personSelected[name];
+        var b = document.createElement("button");
+        b.className = "person-chip" + (on ? " on" : "");
+        b.innerHTML = '<span class="assign-chip" style="background:' + colorFor(name) + '">' +
+                      initials(name).toUpperCase() + "</span><span>" + esc(name) + "</span>";
+        b.addEventListener("click", function () {
+          if (personSelected[name]) delete personSelected[name]; else personSelected[name] = true;
+          save(LS_PSEL, personSelected); render();
+        });
+        opts.appendChild(b);
+      });
+    }
+    bar.appendChild(opts);
+
+    var active = (filterMode === "estado")
+      ? Object.keys(hiddenStatus).length
+      : (CFG.meta.people || []).filter(function (n) { return personSelected[n]; }).length;
+    if (active) {
+      var clr = document.createElement("button");
+      clr.className = "filter-clear"; clr.textContent = t.filterClear;
+      clr.addEventListener("click", function () {
+        if (filterMode === "estado") { hiddenStatus = {}; save(LS_FILTER, hiddenStatus); }
+        else { personSelected = {}; save(LS_PSEL, personSelected); }
+        render();
+      });
+      bar.appendChild(clr);
+    }
   }
 
   function renderLegend() {
@@ -200,7 +257,7 @@
   function renderSection(sec) {
     var t = UI[lang];
     var isVideo = sec.kind === "video";
-    var visible = sec.items.filter(function (it) { return !hiddenStatus[statusOf(sec.id, it)]; });
+    var visible = sec.items.filter(function (it) { return itemVisible(sec, it); });
     if (visible.length === 0) return null;    // toda la sección filtrada → no se muestra
     var done = sec.items.filter(function (it) { return statusOf(sec.id, it) === "hecho"; }).length;
     var isCollapsed = !!collapsed[sec.id];
