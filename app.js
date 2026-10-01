@@ -70,7 +70,8 @@
       noteSave: "Guardar nota", assignTitle: "Asignar a",
       filterHide: "Clic para ocultar este estado", filterShow: "Clic para volver a mostrarlo",
       filterEmpty: "No hay ítems para mostrar con el filtro actual.",
-      filterBy: "Filtrar por:", byStatus: "Estado", byPerson: "Persona", filterClear: "Limpiar"
+      filterBy: "Filtrar por:", byStatus: "Estado", byPerson: "Persona",
+      filterClear: "Limpiar filtros", filterClearTip: "Quita todos los filtros (estado y persona)"
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -98,7 +99,8 @@
       noteSave: "Save note", assignTitle: "Assign to",
       filterHide: "Click to hide this status", filterShow: "Click to show it again",
       filterEmpty: "No items to show with the current filter.",
-      filterBy: "Filter by:", byStatus: "Status", byPerson: "Person", filterClear: "Clear"
+      filterBy: "Filter by:", byStatus: "Status", byPerson: "Person",
+      filterClear: "Clear filters", filterClearTip: "Remove all filters (status and person)"
     }
   };
 
@@ -223,15 +225,16 @@
     }
     bar.appendChild(opts);
 
-    var active = (filterMode === "estado")
-      ? Object.keys(hiddenStatus).length
-      : (CFG.meta.people || []).filter(function (n) { return personSelected[n]; }).length;
-    if (active) {
+    // "Limpiar filtros" borra TODO (estado + persona) de una sola vez
+    var anyActive = Object.keys(hiddenStatus).length ||
+      (CFG.meta.people || []).filter(function (n) { return personSelected[n]; }).length;
+    if (anyActive) {
       var clr = document.createElement("button");
       clr.className = "filter-clear"; clr.textContent = t.filterClear;
+      clr.title = t.filterClearTip;
       clr.addEventListener("click", function () {
-        if (filterMode === "estado") { hiddenStatus = {}; save(LS_FILTER, hiddenStatus); }
-        else { personSelected = {}; save(LS_PSEL, personSelected); }
+        hiddenStatus = {}; personSelected = {};
+        save(LS_FILTER, hiddenStatus); save(LS_PSEL, personSelected);
         render();
       });
       bar.appendChild(clr);
