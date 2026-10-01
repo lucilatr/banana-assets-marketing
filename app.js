@@ -18,6 +18,8 @@
   var LS_LINKS  = "banana-assets-links-v1";
   var LS_COLLAP = "banana-assets-collapsed-v1";
   var LS_LANG   = "banana-assets-lang";
+  var LS_TOKEN  = "banana-assets-gh-token";
+  var LS_SHA    = "banana-assets-data-sha";
 
   var statusOverride = load(LS_STATUS, {});
   var linkStore      = load(LS_LINKS, {});
@@ -25,6 +27,7 @@
   var lang           = localStorage.getItem(LS_LANG) || "es";
 
   var mode = new URLSearchParams(location.search).has("edit") ? "edit" : "read";
+  var dirty = false;   // hay cambios sin guardar en GitHub
 
   var CYCLE = ["falta", "actualizar", "revisar", "hecho"];
 
@@ -43,7 +46,11 @@
       resetConfirm: "¿Borrar todos los cambios de estado y los links agregados a mano?",
       tpl: "Plantilla a escala", close: "Cerrar",
       modeToEdit: "✏️ Editar", modeToRead: "👁 Vista pública",
-      published: "Se descargó config.js con tus datos. Reemplazá el archivo config.js del repo con ese y commiteá."
+      save: "💾 Guardar", saveDirty: "💾 Guardar *", saving: "Guardando…",
+      saved: "✓ Guardado. En ~1 minuto se ve en la versión pública.",
+      saveErr: "No se pudo guardar: ",
+      tokenPrompt: "Pegá tu token de GitHub (se guarda solo en este navegador).\n\nCreá uno en: github.com/settings/tokens → Fine-grained → repo banana-assets-marketing → permiso Contents: Read and write.",
+      noChanges: "No hay cambios para guardar."
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -59,7 +66,11 @@
       resetConfirm: "Clear all status changes and manually-added links?",
       tpl: "Template at scale", close: "Close",
       modeToEdit: "✏️ Edit", modeToRead: "👁 Public view",
-      published: "Downloaded config.js with your data. Replace the repo's config.js with it and commit."
+      save: "💾 Save", saveDirty: "💾 Save *", saving: "Saving…",
+      saved: "✓ Saved. It shows up in the public version in ~1 minute.",
+      saveErr: "Could not save: ",
+      tokenPrompt: "Paste your GitHub token (stored only in this browser).\n\nCreate one at: github.com/settings/tokens → Fine-grained → repo banana-assets-marketing → Contents: Read and write.",
+      noChanges: "No changes to save."
     }
   };
 
@@ -96,6 +107,7 @@
     document.getElementById("btn-mode").textContent = isEdit() ? t.modeToRead : t.modeToEdit;
     document.getElementById("btn-publish").classList.toggle("btn-publish-only", true);
     document.getElementById("btn-publish").style.display = isEdit() ? "" : "none";
+    updateSaveBtn();
 
     renderSummary();
     renderLegend();
@@ -209,7 +221,7 @@
       btn.addEventListener("click", function () {
         var k = keyOf(sec.id, it.id);
         statusOverride[k] = CYCLE[(CYCLE.indexOf(st) + 1) % CYCLE.length];
-        save(LS_STATUS, statusOverride); render();
+        save(LS_STATUS, statusOverride); markDirty(); render();
       });
     } else {
       btn.disabled = true;
@@ -326,7 +338,7 @@
     if (val === null) return;
     val = val.trim();
     if (val) linkStore[storeKey] = val; else delete linkStore[storeKey];
-    save(LS_LINKS, linkStore); render();
+    save(LS_LINKS, linkStore); markDirty(); render();
   }
 
   function promptFolder(sec) {
@@ -337,38 +349,84 @@
     if (val === null) return;
     val = val.trim();
     if (val) linkStore["folder::" + sec.id] = val; else delete linkStore["folder::" + sec.id];
-    save(LS_LINKS, linkStore); render();
+    save(LS_LINKS, linkStore); markDirty(); render();
   }
 
-  /* ---------------- Publicar (exportar config.js) ---------------- */
-  function publish() {
-    var out = { meta: CFG.meta, sections: [] };
-    CFG.sections.forEach(function (s) {
-      var sec = { id: s.id, kind: s.kind, title: s.title,
-        folderUrl: linkStore["folder::" + s.id] || s.folderUrl || "", items: [] };
-      s.items.forEach(function (it) {
-        var item = { id: it.id, status: statusOf(s.id, it), p: it.p, title: it.title,
-          note: it.note || { es: "", en: "" } };
-        if (it.optional) item.optional = true;
-        if (s.kind === "video") item.duration = it.duration || ""; else item.medida = it.medida || "";
-        item.links = (it.links || []).map(function (lk, idx) {
-          var sk = keyOf(s.id, it.id) + "::link" + idx;
-          return { label: lk.label, url: lk.url || linkStore[sk] || "" };
-        });
-        var freeKey = keyOf(s.id, it.id) + "::free";
-        if (linkStore[freeKey]) item.links.push({ label: { es: "Material", en: "Material" }, url: linkStore[freeKey] });
-        sec.items.push(item);
-      });
-      out.sections.push(sec);
-    });
-    var body = "/* Banana Airways — config generado desde la vista (Publicar).\n" +
-               "   Reemplazá config.js del repo con este archivo y commiteá. */\n" +
-               "window.MATERIALS_CONFIG = " + JSON.stringify(out, null, 2) + ";\n";
-    var blob = new Blob([body], { type: "text/javascript" });
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = "config.js";
-    document.body.appendChild(a); a.click(); a.remove();
-    window.alert(UI[lang].published);
+  /* ---------------- Datos compartidos (GitHub) ---------------- */
+  // data.json guarda SOLO lo que cambia: estados + links. La estructura y los
+  // textos viven en config.js. Así el público ve lo último que guardaste.
+  function currentData() {
+    return { status: statusOverride, links: linkStore, updated: new Date().toISOString() };
+  }
+
+  function applyData(d) {
+    if (!d) return;
+    if (d.status && typeof d.status === "object") { statusOverride = d.status; save(LS_STATUS, statusOverride); }
+    if (d.links  && typeof d.links  === "object") { linkStore = d.links; save(LS_LINKS, linkStore); }
+  }
+
+  // Al abrir: traer data.json del repo (versión pública/última guardada).
+  function loadFromGitHub(done) {
+    var url = "./" + (CFG.meta.github && CFG.meta.github.path || "data.json") + "?t=" + Date.now();
+    fetch(url, { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { applyData(d); done(); })
+      .catch(function () { done(); });   // local (file://) o sin red → usa localStorage
+  }
+
+  function b64(str) { return btoa(unescape(encodeURIComponent(str))); }
+
+  function saveToGitHub() {
+    var t = UI[lang], gh = CFG.meta.github;
+    if (!gh || !gh.owner) { window.alert("Falta configurar meta.github en config.js"); return; }
+
+    var token = localStorage.getItem(LS_TOKEN) || "";
+    if (!token) {
+      token = (window.prompt(t.tokenPrompt, "") || "").trim();
+      if (!token) return;
+      localStorage.setItem(LS_TOKEN, token);
+    }
+
+    var btn = document.getElementById("btn-publish");
+    btn.disabled = true; btn.textContent = t.saving;
+
+    var api = "https://api.github.com/repos/" + gh.owner + "/" + gh.repo + "/contents/" + gh.path;
+    var headers = { "Authorization": "token " + token, "Accept": "application/vnd.github+json" };
+    var content = b64(JSON.stringify(currentData(), null, 2));
+    var sha = localStorage.getItem(LS_SHA) || "";
+
+    // Pedimos el sha actual (si cambió) y después hacemos PUT.
+    fetch(api + "?ref=" + gh.branch, { headers: headers, cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (meta) {
+        var curSha = (meta && meta.sha) || sha;
+        var payload = { message: "Actualizar assets de marketing", content: content, branch: gh.branch };
+        if (curSha) payload.sha = curSha;
+        return fetch(api, { method: "PUT", headers: headers, body: JSON.stringify(payload) });
+      })
+      .then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+      })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.ok) {
+          if (res.j && res.j.content && res.j.content.sha) localStorage.setItem(LS_SHA, res.j.content.sha);
+          dirty = false; updateSaveBtn();
+          window.alert(t.saved);
+        } else {
+          updateSaveBtn();
+          if (res.status === 401 || res.status === 403) localStorage.removeItem(LS_TOKEN);
+          window.alert(t.saveErr + (res.j && res.j.message ? res.j.message : res.status));
+        }
+      })
+      .catch(function (e) { btn.disabled = false; updateSaveBtn(); window.alert(t.saveErr + e.message); });
+  }
+
+  function markDirty() { dirty = true; updateSaveBtn(); }
+  function updateSaveBtn() {
+    var btn = document.getElementById("btn-publish");
+    if (!btn) return;
+    btn.textContent = dirty ? UI[lang].saveDirty : UI[lang].save;
   }
 
   /* ---------------- Template modal ---------------- */
@@ -391,7 +449,7 @@
   function setLang(l) { lang = l; localStorage.setItem(LS_LANG, l); render(); }
 
   document.getElementById("btn-pdf").addEventListener("click", function () { window.print(); });
-  document.getElementById("btn-publish").addEventListener("click", publish);
+  document.getElementById("btn-publish").addEventListener("click", saveToGitHub);
 
   document.getElementById("btn-mode").addEventListener("click", function () {
     mode = isEdit() ? "read" : "edit";
@@ -409,8 +467,9 @@
     if (!window.confirm(UI[lang].resetConfirm)) return;
     statusOverride = {}; linkStore = {}; collapsed = {};
     save(LS_STATUS, statusOverride); save(LS_LINKS, linkStore); save(LS_COLLAP, collapsed);
-    render();
+    markDirty(); render();
   });
 
-  render();
+  // Arranque: traer los datos del repo (lo que ve el público) y después dibujar.
+  loadFromGitHub(function () { render(); });
 })();

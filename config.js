@@ -29,6 +29,9 @@ window.MATERIALS_CONFIG = {
     title:    { es: "Banana Airways · Assets de marketing",
                 en: "Banana Airways · Marketing assets" },
     subtitle: { es: "", en: "" },
+    // Repo donde se guardan los estados/links (botón "Guardar"). El token NO va
+    // acá: se pega una vez en el navegador y queda solo en tu máquina.
+    github: { owner: "lucilatr", repo: "banana-assets-marketing", branch: "main", path: "data.json" },
     priorities: [
       { key: "P1", label: { es: "Empezar ya", en: "Start now" } },
       { key: "P2", label: { es: "Antes del push de la demo", en: "Before the demo push" } },

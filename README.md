@@ -1,27 +1,30 @@
 # Banana Airways — Assets de marketing
 
-Microsite estático (sin dependencias) con la lista de materiales de marketing para el publisher.
-Static, dependency-free microsite with the marketing material list for the publisher.
+Microsite estático con la lista de materiales de marketing para el publisher.
+Se publica en GitHub Pages y guarda los cambios (estados + links) directo en el repo.
 
-## Qué hace / What it does
-- Tabla por sección: **Estado · P · Asset · Medida/plantilla · Links** (sección de Videos con **Duración** y **Notas**).
-- **Estado clickeable**: clic en el chip cambia `Falta → Revisar → Hecho → ...`. Cuando queda en **Hecho**, la fila se pinta de verde. Se guarda en el navegador.
-- **📁 por sección**: link a la carpeta de Drive con todo el material. Si no tiene link cargado, clic en 📁 te deja pegar uno.
-- **+ agregar link** por elemento: para linkear cosas sueltas que no están en la carpeta del grupo. Se guarda en el navegador.
-- Badges de medida punteados (ej. `920×430`) → clic muestra la **plantilla a escala**.
-- Toggle **ES / EN** y barra de progreso.
+## Modos
+- **Vista pública** (URL normal): lo que ve cualquiera. Solo se ven los links cargados; el estado no se edita.
+- **Edición** (agregá `?edit` al final de la URL): podés cambiar estados, cargar links y carpetas.
 
-## Editar el contenido / Edit content
-Todo vive en **`config.js`** (un solo archivo, comentado). No hace falta tocar `index.html` ni `app.js`.
-Para fijar links de forma permanente (que los vea cualquiera, no solo tu navegador), poné la `url` en `config.js`.
+## Botones
+- **💾 Guardar**: escribe los cambios en el repo (archivo `data.json`) usando tu token de GitHub.
+  La primera vez te pide el token (se guarda solo en tu navegador). En ~1 min GitHub Pages se actualiza y **todos ven lo mismo**.
+- **🖨 PDF**: abre el diálogo de imprimir → "Guardar como PDF".
+- **EN / ES**: idioma. **👁 / ✏️**: cambia tu vista entre pública y edición.
 
-## Subir a tu GitHub / Publish
-```bash
-# dentro de esta carpeta
-git init && git add -A && git commit -m "Base microsite assets de marketing"
-gh repo create banana-assets-marketing --public --source=. --push   # o creá el repo a mano
-```
-Después, en GitHub: **Settings → Pages → Deploy from branch → main / root**.
-Queda en `https://TU-USUARIO.github.io/banana-assets-marketing/`.
+## Cómo se guardan los datos
+- `config.js` → estructura y textos (secciones, assets, medidas). Lo editamos nosotros.
+- `data.json` → estados y links que vas cargando desde el navegador. Lo actualiza el botón **Guardar**.
+- Al abrir la página, lee `data.json` del repo, así la versión pública muestra lo último guardado.
 
-> El estado (Hecho/Falta/Revisar) y los links agregados con "+" se guardan en el **localStorage del navegador** de quien mira. Para una versión fija/compartida, cargá los valores en `config.js`.
+## Token de GitHub (una sola vez)
+1. Entrá a **github.com/settings/tokens** → *Fine-grained tokens* → *Generate new token*.
+2. Repository access: solo **banana-assets-marketing**.
+3. Permissions → **Contents: Read and write**.
+4. Generá, copiá, y pegalo cuando el sitio te lo pida al tocar **Guardar**.
+
+## Deploy
+Repo: `lucilatr/banana-assets-marketing` · GitHub Pages desde `main` / root.
+URL pública: `https://lucilatr.github.io/banana-assets-marketing/`
+Para editar: `https://lucilatr.github.io/banana-assets-marketing/?edit`
