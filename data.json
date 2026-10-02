@@ -81,11 +81,6 @@
     "creadores::creator-list": [
       "VALENTIN FRARE"
     ],
-    "creadores::wishlist-button": [
-      "AGUSTIN MARTINEZ",
-      "LUCILA TROBBIANI",
-      "VALENTIN FRARE"
-    ],
     "videos::gameplay-trailer": [
       "FERNANDO MALDONADO",
       "VALENTIN FRARE",
@@ -110,5 +105,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-02T20:43:35.493Z"
+  "updated": "2026-10-02T20:43:42.258Z"
 }
