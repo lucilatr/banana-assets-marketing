@@ -39,7 +39,7 @@
   },
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
-    "sitio::website": "LOGO Y WALLPAPER",
+    "sitio::website": "LOGO\nponer en el bg TRAILER en loop - o fragmento\nSumar presskit boton\nwishlist now + fecha \nRESPETAR FONT Y GUIA DE COLORES",
     "steam::event-art": "ANUNCIO DEMO\n1920x622 banner sin texto (generalmente la misma imagen que la que se usa 800x450)",
     "sitio::presskit-page": "PONER BOTON EN LA PAGINA"
   },
@@ -110,5 +110,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T15:32:20.150Z"
+  "updated": "2026-10-02T15:34:59.692Z"
 }
