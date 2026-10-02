@@ -9,7 +9,7 @@
     "keyart::renders": "revisar",
     "keyart::logo-versions": "hecho",
     "keyart::wallpapers": "hecho",
-    "sitio::website": "actualizar",
+    "sitio::website": "revisar",
     "captura::capture-guide": "revisar"
   },
   "priority": {
@@ -112,5 +112,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-02T20:34:13.113Z"
+  "updated": "2026-10-02T20:34:35.223Z"
 }
