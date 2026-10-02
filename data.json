@@ -8,7 +8,8 @@
     "keyart::brand-guide": "hecho",
     "keyart::renders": "revisar",
     "keyart::logo-versions": "hecho",
-    "keyart::wallpapers": "hecho"
+    "keyart::wallpapers": "hecho",
+    "sitio::website": "P1"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -111,5 +112,5 @@
       "FEDERICO CARLINI"
     ]
   },
-  "updated": "2026-10-02T17:47:00.997Z"
+  "updated": "2026-10-02T17:54:46.121Z"
 }
