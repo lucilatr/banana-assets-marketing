@@ -417,23 +417,6 @@
       '<h3 class="section-title">' + esc(L(sec.title)) + "</h3>" +
       '<span class="section-count">' + done + "/" + sec.items.length + "</span>";
 
-    var folderUrl = linkStore["folder::" + sec.id] || sec.folderUrl || "";
-    if (folderUrl || isEdit()) {
-      var folder = document.createElement("a");
-      if (folderUrl) {
-        folder.className = "folder-link"; folder.href = folderUrl;
-        folder.target = "_blank"; folder.rel = "noopener";
-        folder.innerHTML = "📁 " + esc(t.folder);
-        if (isEdit()) folder.addEventListener("dblclick", function (e) { e.preventDefault(); e.stopPropagation(); promptFolder(sec); });
-      } else {
-        folder.className = "folder-link empty"; folder.href = "javascript:void(0)";
-        folder.textContent = "📁 " + t.folder;
-        folder.addEventListener("click", function (e) { e.stopPropagation(); promptFolder(sec); });
-      }
-      folder.addEventListener("click", function (e) { e.stopPropagation(); });
-      head.appendChild(folder);
-    }
-
     head.addEventListener("click", function () {
       collapsed[sec.id] = !collapsed[sec.id]; save(LS_COLLAP, collapsed); render();
     });
