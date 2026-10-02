@@ -40,6 +40,7 @@
 
   var mode = new URLSearchParams(location.search).has("edit") ? "edit" : "read";
   var dirty = false;   // hay cambios sin guardar en GitHub
+  var searchQ = "";    // texto del buscador (no se guarda, es de la sesión)
 
   var CYCLE = ["falta", "actualizar", "revisar", "hecho"];
 
@@ -72,7 +73,10 @@
       filterEmpty: "No hay ítems para mostrar con el filtro actual.",
       filterBy: "Filtrar por:", byStatus: "Estado", byPerson: "Persona",
       filterClear: "Limpiar filtros", filterClearTip: "Quita todos los filtros (estado y persona)",
-      tlTitle: "Línea de tiempo", tlPending: "Pendientes de generar:", tlToday: "Hoy", tlTbd: "a definir"
+      tlTitle: "Línea de tiempo", tlPending: "Pendientes de generar:", tlToday: "Hoy", tlTbd: "a definir",
+      searchPlaceholder: "Buscar tarea…", exportBtn: "⬇️ Exportar tareas",
+      exportTitle: "BANANA AIRWAYS — Lista de tareas", exportSub: "Filtro:",
+      exportCount: "tareas", exportAll: "todas", exportExcept: "sin", exportEmptyAlert: "No hay tareas para exportar con el filtro actual."
     },
     en: {
       colEstado: "Status", colP: "P", colAsset: "Asset", colVideo: "Video",
@@ -102,7 +106,10 @@
       filterEmpty: "No items to show with the current filter.",
       filterBy: "Filter by:", byStatus: "Status", byPerson: "Assigned",
       filterClear: "Clear filters", filterClearTip: "Remove all filters (status and person)",
-      tlTitle: "Timeline", tlPending: "Left to create:", tlToday: "Today", tlTbd: "TBD"
+      tlTitle: "Timeline", tlPending: "Left to create:", tlToday: "Today", tlTbd: "TBD",
+      searchPlaceholder: "Search task…", exportBtn: "⬇️ Export tasks",
+      exportTitle: "BANANA AIRWAYS — Task list", exportSub: "Filter:",
+      exportCount: "tasks", exportAll: "all", exportExcept: "except", exportEmptyAlert: "No tasks to export with the current filter."
     }
   };
 
@@ -142,16 +149,25 @@
     document.getElementById("btn-publish").style.display = isEdit() ? "" : "none";
     updateSaveBtn();
 
+    var si = document.getElementById("search-input");
+    si.placeholder = t.searchPlaceholder;
+    if (si.value !== searchQ) si.value = searchQ;
+    document.getElementById("search-clear").parentNode.classList.toggle("has", !!searchQ);
+    document.getElementById("btn-export").textContent = t.exportBtn;
+
     renderFilterBar();
     renderTimeline();
+    renderSectionsOnly();
+  }
 
+  // Redibuja solo las secciones + progreso (sin tocar el buscador → no pierde foco).
+  function renderSectionsOnly() {
     var root = document.getElementById("sections");
     root.innerHTML = "";
     CFG.sections.forEach(function (sec) { var el = renderSection(sec); if (el) root.appendChild(el); });
     if (!root.children.length) {
       root.innerHTML = '<p class="empty-filter">' + UI[lang].filterEmpty + "</p>";
     }
-
     renderProgress();
   }
 
@@ -163,8 +179,23 @@
     return c;
   }
 
-  // ¿se ve este item con el filtro actual?
+  // ¿coincide con el texto buscado? (título es/en, nota del asset, nota manual, personas)
+  function matchesSearch(sec, it) {
+    if (!searchQ) return true;
+    var k = keyOf(sec.id, it.id);
+    var hay = [
+      it.title && it.title.es, it.title && it.title.en,
+      it.note && it.note.es, it.note && it.note.en,
+      noteStore[k] || "",
+      (assignStore[k] || []).join(" "),
+      L(sec.title)
+    ].join(" ").toLowerCase();
+    return searchQ.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+  }
+
+  // ¿se ve este item con el filtro actual + búsqueda?
   function itemVisible(sec, it) {
+    if (!matchesSearch(sec, it)) return false;
     if (filterMode === "persona") {
       var sel = (CFG.meta.people || []).filter(function (n) { return personSelected[n]; });
       if (sel.length === 0) return true;                 // sin personas elegidas → se ven todos
@@ -312,6 +343,60 @@
     var pct = c.total ? Math.round((c.hecho / c.total) * 100) : 0;
     document.getElementById("progress-fill").style.width = pct + "%";
     document.getElementById("progress-label").textContent = UI[lang].progress(c.hecho, c.total) + "  ·  " + pct + "%";
+  }
+
+  // ---- Exportar tareas (según el filtro/búsqueda actual) ----
+  function exportTasks() {
+    var t = UI[lang];
+    var lines = [];
+    lines.push(t.exportTitle);
+    lines.push(t.exportSub + " " + exportFilterDesc());
+    lines.push("");
+    var total = 0;
+    CFG.sections.forEach(function (sec) {
+      var vis = sec.items.filter(function (it) { return itemVisible(sec, it); });
+      if (!vis.length) return;
+      lines.push("## " + L(sec.title));
+      vis.forEach(function (it) {
+        var k = keyOf(sec.id, it.id);
+        var st = statusOf(sec.id, it);
+        var done = (st === "hecho");
+        var pr = done ? "" : (" [" + priorityOf(sec.id, it) + "]");
+        var box = done ? "[x]" : "[ ]";
+        var who = (assignStore[k] || []);
+        var line = "- " + box + " " + L(it.title) + pr + "  (" + t.st[st] + ")";
+        if (who.length) line += "  — " + who.join(", ");
+        lines.push(line);
+        var mn = noteStore[k];
+        if (mn) mn.split("\n").forEach(function (x) { if (x.trim()) lines.push("    · " + x.trim()); });
+        total++;
+      });
+      lines.push("");
+    });
+    lines.push("—");
+    lines.push(total + " " + t.exportCount);
+
+    var text = lines.join("\n");
+    var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "banana-tareas.txt";
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  function exportFilterDesc() {
+    var t = UI[lang], parts = [];
+    if (searchQ) parts.push('"' + searchQ + '"');
+    if (filterMode === "persona") {
+      var sel = (CFG.meta.people || []).filter(function (n) { return personSelected[n]; });
+      parts.push(t.byPerson + ": " + (sel.length ? sel.join(", ") : t.exportAll));
+    } else {
+      var hidden = Object.keys(hiddenStatus);
+      parts.push(t.byStatus + ": " + (hidden.length
+        ? t.exportExcept + " " + hidden.map(function (k) { return t.st[k]; }).join(", ")
+        : t.exportAll));
+    }
+    return parts.join(" · ");
   }
 
   function renderSection(sec) {
@@ -822,6 +907,26 @@
   document.getElementById("btn-pdf").addEventListener("click", function () { window.print(); });
   document.getElementById("btn-publish").addEventListener("click", function () { doSave(false); });
   document.getElementById("btn-publish").title = UI[lang].autoTip;
+
+  // Buscador
+  var searchInput = document.getElementById("search-input");
+  searchInput.addEventListener("input", function () {
+    searchQ = searchInput.value.trim().toLowerCase();
+    document.getElementById("search-clear").parentNode.classList.toggle("has", !!searchQ);
+    renderSectionsOnly();
+  });
+  document.getElementById("search-clear").addEventListener("click", function () {
+    searchQ = ""; searchInput.value = ""; searchInput.focus();
+    document.getElementById("search-clear").parentNode.classList.remove("has");
+    renderSectionsOnly();
+  });
+
+  // Exportar tareas según el filtro/búsqueda actual
+  document.getElementById("btn-export").addEventListener("click", function () {
+    var any = CFG.sections.some(function (s) { return s.items.some(function (it) { return itemVisible(s, it); }); });
+    if (!any) { window.alert(UI[lang].exportEmptyAlert); return; }
+    exportTasks();
+  });
 
   document.getElementById("btn-mode").addEventListener("click", function () {
     mode = isEdit() ? "read" : "edit";

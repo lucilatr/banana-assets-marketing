@@ -57,8 +57,19 @@
     .chip.revisar   { background: var(--revisar-chip);   color: var(--revisar); }
     .chip.actualizar{ background: var(--actualizar-chip);color: var(--actualizar); }
     .summary .cnt { color: var(--ink-soft); }
+    /* fila de búsqueda + exportar */
+    .toolrow { margin: 18px 0 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .search-box { position: relative; display: inline-flex; align-items: center; flex: 1; min-width: 220px; max-width: 420px; }
+    .search-ico { position: absolute; left: 11px; font-size: .9rem; opacity: .6; pointer-events: none; }
+    #search-input { width: 100%; box-sizing: border-box; padding: 8px 32px 8px 34px; font: inherit; font-size: .9rem;
+      border: 1.5px solid var(--line); border-radius: 999px; background: #fff; }
+    #search-input:focus { outline: none; border-color: var(--ink); }
+    .search-clear { position: absolute; right: 8px; border: 0; background: none; cursor: pointer; color: var(--ink-soft);
+      font-size: .85rem; display: none; }
+    .search-box.has .search-clear { display: inline; }
+
     /* barra de filtro (por estado / por persona) */
-    .filterbar { margin: 18px 0 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filterbar { margin: 8px 0 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .filter-label { font-size: .85rem; font-weight: 700; color: var(--ink-soft); }
     .filter-seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; }
     .seg-btn { border: 0; background: #fff; color: var(--ink); font-weight: 700; font-size: .8rem;
@@ -264,7 +275,7 @@
 
     /* ---------- Impresión / PDF ---------- */
     @media print {
-      .toolbar, .lang-toggle, #reset-btn, .section-caret,
+      .toolbar, .lang-toggle, #reset-btn, .section-caret, .toolrow,
       .add-link, .link-pending, .link-edit, .folder-link.empty, .modal-back,
       .note-btn, .note-pop, .assign-add, .assign-pop, .filter-hint, .filter-chip .eye { display: none !important; }
       .wrap { max-width: none; padding: 0; }
@@ -295,6 +306,15 @@
         <button class="tool-btn" id="btn-mode"></button>
         <button class="tool-btn primary" id="btn-publish">💾 Guardar</button>
       </div>
+    </div>
+
+    <div class="toolrow">
+      <div class="search-box">
+        <span class="search-ico">🔍</span>
+        <input type="text" id="search-input" autocomplete="off" />
+        <button class="search-clear" id="search-clear" title="Limpiar">✕</button>
+      </div>
+      <button class="tool-btn" id="btn-export"></button>
     </div>
 
     <div class="filterbar" id="filterbar"></div>
