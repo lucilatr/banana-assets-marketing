@@ -5,9 +5,10 @@
     "captura::clip-library": "actualizar",
     "creadores::wishlist-screen": "revisar",
     "creadores::wishlist-button": "revisar",
-    "keyart::brand-guide": "revisar",
+    "keyart::brand-guide": "hecho",
     "keyart::renders": "revisar",
-    "keyart::logo-versions": "actualizar"
+    "keyart::logo-versions": "actualizar",
+    "keyart::wallpapers": "hecho"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -109,5 +110,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T15:26:28.119Z"
+  "updated": "2026-10-02T15:32:20.150Z"
 }
