@@ -50,7 +50,8 @@
     "sitio::website": "LOGO\nponer en el bg TRAILER en loop - o fragmento\nSumar presskit boton\nwishlist now + fecha \nRESPETAR FONT Y GUIA DE COLORES",
     "steam::event-art": "ANUNCIO DEMO\n1920x622 banner sin texto (generalmente la misma imagen que la que se usa 800x450)",
     "redes::placa-final": "+ PLACA INICIAL",
-    "creadores::wishlist-screen": "REVISAR EN PLAYTEST"
+    "creadores::wishlist-screen": "REVISAR EN PLAYTEST",
+    "creadores::wishlist-button": "REVISAR EN PLAYTEST"
   },
   "assign": {
     "captura::clip-library": [
@@ -120,5 +121,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-02T20:51:31.987Z"
+  "updated": "2026-10-02T20:51:42.501Z"
 }
