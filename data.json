@@ -12,7 +12,8 @@
     "sitio::website": "revisar",
     "captura::capture-guide": "revisar",
     "sitio::presskit-page": "hecho",
-    "sitio::factsheet": "hecho"
+    "sitio::factsheet": "hecho",
+    "creadores::creator-onepager": "revisar"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -116,5 +117,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T20:43:12.613Z"
+  "updated": "2026-10-02T20:43:14.974Z"
 }
