@@ -146,9 +146,7 @@ window.MATERIALS_CONFIG = {
         { id: "renders", status: "hecho", p: "P2", title: { es: "Renders de personajes y pasajeros", en: "Character & passenger renders" },
           note: { es: "35 renders de los modelos del juego: 15 skins, 3 pilotos, 6 pasajeros, 11 peligros (bebé, mutante, caníbal, tornado, pájaros, abejas, misil...).", en: "35 renders of the in-game models: 15 skins, 3 pilots, 6 passengers, 11 hazards (baby, mutant, cannibal, tornado, birds, bees, missile...)." }, medida: "2048×2048", links: [] },
         { id: "brand-guide", status: "hecho", p: "P2", title: { es: "Guía de marca", en: "Brand guide" },
-          note: { es: "PDF de 9 páginas: uso del logo, colores, tipografías (Teko + Montserrat), personajes, tono.", en: "9-page PDF: logo usage, colors, typography (Teko + Montserrat), characters, tone." }, medida: "PDF", links: [] },
-        { id: "wallpapers", status: "falta", p: "P3", title: { es: "Wallpapers", en: "Wallpapers" },
-          note: { es: "", en: "" }, medida: "3840×2160 · 1290×2796", links: [] }
+          note: { es: "PDF de 9 páginas: uso del logo, colores, tipografías (Teko + Montserrat), personajes, tono.", en: "9-page PDF: logo usage, colors, typography (Teko + Montserrat), characters, tone." }, medida: "PDF", links: [] }
       ] },
 
     /* ------------------------------------------------------------------ */
@@ -178,11 +176,7 @@ window.MATERIALS_CONFIG = {
           note: { es: "Discord · TikTok · YouTube · Instagram · X", en: "Discord · TikTok · YouTube · Instagram · X" }, medida: "",
           links: [ { label: { es: "Discord", en: "Discord" }, url: "" }, { label: { es: "TikTok", en: "TikTok" }, url: "" }, { label: { es: "YouTube", en: "YouTube" }, url: "" }, { label: { es: "Instagram", en: "Instagram" }, url: "" }, { label: { es: "X", en: "X" }, url: "" }, { label: { es: "Especificación oficial", en: "Official spec" }, url: "" } ] },
         { id: "placa-final", status: "falta", p: "P1", title: { es: "Placa final", en: "End card" },
-          note: { es: "A generar", en: "To generate" }, medida: "1080×1920", links: [] },
-        { id: "discord-emotes", status: "falta", p: "P2", optional: true, title: { es: "Emotes y stickers de Discord", en: "Discord emotes & stickers" },
-          note: { es: "", en: "" }, medida: "128×128 · 320×320", links: [] },
-        { id: "giphy", status: "falta", p: "P3", optional: true, title: { es: "Pack de GIFs / stickers para GIPHY", en: "GIF / sticker pack for GIPHY" },
-          note: { es: "", en: "" }, medida: "", links: [] }
+          note: { es: "A generar", en: "To generate" }, medida: "1080×1920", links: [] }
       ] },
 
     /* ------------------------------------------------------------------ */
