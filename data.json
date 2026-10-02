@@ -81,11 +81,6 @@
     "creadores::creator-list": [
       "VALENTIN FRARE"
     ],
-    "creadores::wishlist-screen": [
-      "AGUSTIN MARTINEZ",
-      "LUCILA TROBBIANI",
-      "VALENTIN FRARE"
-    ],
     "creadores::wishlist-button": [
       "AGUSTIN MARTINEZ",
       "LUCILA TROBBIANI",
@@ -115,5 +110,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-02T20:43:19.925Z"
+  "updated": "2026-10-02T20:43:35.493Z"
 }
