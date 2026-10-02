@@ -48,11 +48,6 @@
     "redes::placa-final": "+ PLACA INICIAL"
   },
   "assign": {
-    "captura::capture-guide": [
-      "VALENTIN FRARE",
-      "AGUSTIN MARTINEZ",
-      "LUCILA TROBBIANI"
-    ],
     "captura::clip-library": [
       "FERNANDO MALDONADO",
       "VALENTIN FRARE",
@@ -114,5 +109,5 @@
       "FEDERICO CARLINI"
     ]
   },
-  "updated": "2026-10-02T20:34:06.713Z"
+  "updated": "2026-10-02T20:34:11.145Z"
 }
