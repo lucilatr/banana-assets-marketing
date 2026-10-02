@@ -218,7 +218,9 @@
     var t = UI[lang], btn = document.getElementById("btn-filter");
     var n = activeFilterCount();
     btn.classList.toggle("active", filtersOpen);
-    btn.innerHTML = "⚙️ " + t.filterBtn +
+    var funnel = '<svg class="filter-funnel" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">' +
+      '<path fill="currentColor" d="M1 2.5A.5.5 0 0 1 1.5 2h13a.5.5 0 0 1 .38.82L10 8.7V13a.5.5 0 0 1-.28.45l-3 1.5A.5.5 0 0 1 6 14.5V8.7L1.12 2.82A.5.5 0 0 1 1 2.5Z"/></svg>';
+    btn.innerHTML = funnel + " " + t.filterBtn +
       (n ? ' <span class="filter-badge">' + n + "</span>" : "") +
       ' <span class="filter-caret">▾</span>';
     document.getElementById("filterbar").hidden = !filtersOpen;
