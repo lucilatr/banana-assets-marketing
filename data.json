@@ -7,7 +7,7 @@
     "creadores::wishlist-button": "revisar",
     "keyart::brand-guide": "revisar",
     "keyart::renders": "revisar",
-    "keyart::logo-versions": "revisar"
+    "keyart::logo-versions": "hecho"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -109,5 +109,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T15:23:53.687Z"
+  "updated": "2026-10-02T15:25:34.160Z"
 }
