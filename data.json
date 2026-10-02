@@ -42,7 +42,8 @@
     "keyart::brand-guide::free": "https://drive.google.com/file/d/1Is_zLcKmeDskCMbEUostxQJSYYTmOTBr/view?usp=drive_link",
     "steam::demo-page::free": "https://store.steampowered.com/app/4900690/Banana_Airways_Demo/",
     "captura::capture-guide::free": "https://bananaairways.com/capture/",
-    "creadores::creator-onepager::free": "https://bananaairways.com/creators/"
+    "creadores::creator-onepager::free": "https://bananaairways.com/creators/",
+    "sitio::factsheet::free": "https://bananaairways.com/factsheet/"
   },
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
@@ -117,5 +118,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T20:44:00.526Z"
+  "updated": "2026-10-02T20:44:47.859Z"
 }
