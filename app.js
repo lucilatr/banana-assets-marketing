@@ -41,6 +41,7 @@
   var mode = new URLSearchParams(location.search).has("edit") ? "edit" : "read";
   var dirty = false;   // hay cambios sin guardar en GitHub
   var searchQ = "";    // texto del buscador (no se guarda, es de la sesión)
+  var filtersOpen = false;  // panel de filtros visible u oculto (sesión)
 
   var CYCLE = ["falta", "actualizar", "revisar", "hecho"];
 
@@ -74,7 +75,7 @@
       filterBy: "Filtrar por:", byStatus: "Estado", byPerson: "Persona",
       filterClear: "Limpiar filtros", filterClearTip: "Quita todos los filtros (estado y persona)",
       tlTitle: "Línea de tiempo", tlPending: "Pendientes de generar:", tlToday: "Hoy", tlTbd: "a definir",
-      searchPlaceholder: "Buscar tarea…", exportBtn: "⬇️ Exportar tareas",
+      searchPlaceholder: "Buscar tarea…", exportBtn: "⬇️ Exportar tareas", filterBtn: "Filtrar",
       exportTitle: "BANANA AIRWAYS — Lista de tareas", exportSub: "Filtro:",
       exportCount: "tareas", exportAll: "todas", exportExcept: "sin", exportEmptyAlert: "No hay tareas para exportar con el filtro actual."
     },
@@ -107,7 +108,7 @@
       filterBy: "Filter by:", byStatus: "Status", byPerson: "Assigned",
       filterClear: "Clear filters", filterClearTip: "Remove all filters (status and person)",
       tlTitle: "Timeline", tlPending: "Left to create:", tlToday: "Today", tlTbd: "TBD",
-      searchPlaceholder: "Search task…", exportBtn: "⬇️ Export tasks",
+      searchPlaceholder: "Search task…", exportBtn: "⬇️ Export tasks", filterBtn: "Filter",
       exportTitle: "BANANA AIRWAYS — Task list", exportSub: "Filter:",
       exportCount: "tasks", exportAll: "all", exportExcept: "except", exportEmptyAlert: "No tasks to export with the current filter."
     }
@@ -154,6 +155,7 @@
     if (si.value !== searchQ) si.value = searchQ;
     document.getElementById("search-clear").parentNode.classList.toggle("has", !!searchQ);
     document.getElementById("btn-export").textContent = t.exportBtn;
+    updateFilterBtn();
 
     renderFilterBar();
     renderTimeline();
@@ -205,6 +207,19 @@
       if (!assigned.some(function (n) { return personSelected[n]; })) return false;
     }
     return true;
+  }
+
+  function activeFilterCount() {
+    return Object.keys(hiddenStatus).length +
+      (CFG.meta.people || []).filter(function (n) { return personSelected[n]; }).length;
+  }
+
+  function updateFilterBtn() {
+    var t = UI[lang], btn = document.getElementById("btn-filter");
+    var n = activeFilterCount();
+    btn.classList.toggle("active", filtersOpen);
+    btn.innerHTML = "⚙️ " + t.filterBtn + (n ? ' <span class="filter-badge">' + n + "</span>" : "");
+    document.getElementById("filterbar").hidden = !filtersOpen;
   }
 
   function renderFilterBar() {
@@ -888,6 +903,11 @@
     searchQ = ""; searchInput.value = ""; searchInput.focus();
     document.getElementById("search-clear").parentNode.classList.remove("has");
     renderSectionsOnly();
+  });
+
+  // Mostrar/ocultar el panel de filtros
+  document.getElementById("btn-filter").addEventListener("click", function () {
+    filtersOpen = !filtersOpen; updateFilterBtn();
   });
 
   // Exportar tareas según el filtro/búsqueda actual
