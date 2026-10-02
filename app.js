@@ -218,7 +218,9 @@
     var t = UI[lang], btn = document.getElementById("btn-filter");
     var n = activeFilterCount();
     btn.classList.toggle("active", filtersOpen);
-    btn.innerHTML = "⚙️ " + t.filterBtn + (n ? ' <span class="filter-badge">' + n + "</span>" : "");
+    btn.innerHTML = "⚙️ " + t.filterBtn +
+      (n ? ' <span class="filter-badge">' + n + "</span>" : "") +
+      ' <span class="filter-caret">▾</span>';
     document.getElementById("filterbar").hidden = !filtersOpen;
   }
 
