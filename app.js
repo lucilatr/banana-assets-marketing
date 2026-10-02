@@ -455,18 +455,18 @@
     var naf = renderNoteAffordance(sec, it, st);
     if (naf) tdSt.appendChild(naf);
     if (isEdit()) {
-      var sel = document.createElement("select");
-      sel.className = "status-select " + st;
+      var stSel = document.createElement("select");
+      stSel.className = "status-select " + st;
       CYCLE.forEach(function (s) {
         var o = document.createElement("option");
         o.value = s; o.textContent = t.st[s]; if (s === st) o.selected = true;
-        sel.appendChild(o);
+        stSel.appendChild(o);
       });
-      sel.addEventListener("change", function () {
-        statusOverride[keyOf(sec.id, it.id)] = sel.value;
+      stSel.addEventListener("change", function () {
+        statusOverride[keyOf(sec.id, it.id)] = this.value;
         save(LS_STATUS, statusOverride); markDirty(); render();
       });
-      tdSt.appendChild(sel);
+      tdSt.appendChild(stSel);
     } else {
       var btn = document.createElement("button");
       btn.className = "status-btn " + st;
@@ -485,17 +485,17 @@
     } else {
     tdP.className = "p-cell " + pr;
     if (isEdit()) {
-      var sel = document.createElement("select");
-      sel.className = "p-select " + pr;
+      var prSel = document.createElement("select");
+      prSel.className = "p-select " + pr;
       ["P1", "P2", "P3"].forEach(function (p) {
         var o = document.createElement("option");
         o.value = p; o.textContent = p; if (p === pr) o.selected = true;
-        sel.appendChild(o);
+        prSel.appendChild(o);
       });
-      sel.addEventListener("change", function () {
-        prioOverride[keyOf(sec.id, it.id)] = sel.value; markDirty(); render();
+      prSel.addEventListener("change", function () {
+        prioOverride[keyOf(sec.id, it.id)] = this.value; markDirty(); render();
       });
-      tdP.appendChild(sel);
+      tdP.appendChild(prSel);
     } else {
       tdP.textContent = pr;
     }
