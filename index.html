@@ -179,6 +179,15 @@
     .status-btn:not(:disabled):hover { outline: 2px solid rgba(0,0,0,.12); }
     .status-btn:disabled { cursor: default; }
 
+    .status-select { font: inherit; font-weight: 700; font-size: .74rem; border: 1px solid var(--line);
+      border-radius: 6px; padding: 4px 6px; cursor: pointer; }
+    .status-select.hecho     { background: var(--hecho-chip);     color: var(--hecho); border-color: var(--hecho-line); }
+    .status-select.falta     { background: var(--falta-chip);     color: var(--falta); }
+    .status-select.revisar   { background: var(--revisar-chip);   color: var(--revisar); }
+    .status-select.actualizar{ background: var(--actualizar-chip);color: var(--actualizar); }
+    .status-select:hover { outline: 2px solid rgba(0,0,0,.12); }
+    .status-select option { background: #fff; color: var(--ink); }
+
     .opt-tag { display: inline-block; margin-left: 8px; font-size: .64rem; font-weight: 800; letter-spacing: .04em;
       text-transform: uppercase; color: var(--ink-soft); background: var(--panel);
       border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; vertical-align: middle; }

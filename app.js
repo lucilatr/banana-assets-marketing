@@ -26,6 +26,7 @@
   var LS_LANG   = "banana-assets-lang";
   var LS_TOKEN  = "banana-assets-gh-token";
   var LS_SHA    = "banana-assets-data-sha";
+  var LS_LOCALTS = "banana-assets-local-ts";   // marca de tiempo del último cambio local
 
   var statusOverride = load(LS_STATUS, {});
   var linkStore      = load(LS_LINKS, {});
@@ -448,25 +449,31 @@
     var tr = document.createElement("tr");
     tr.className = (st === "hecho") ? "hecho" : "";
 
-    // Estado (con la nota "qué actualizar" a la izquierda del chip)
+    // Estado: desplegable en edición (elegís cualquier estado), chip en vista pública.
     var tdSt = document.createElement("td");
     tdSt.className = "estado-cell";
     var naf = renderNoteAffordance(sec, it, st);
     if (naf) tdSt.appendChild(naf);
-    var btn = document.createElement("button");
-    btn.className = "status-btn " + st;
-    btn.textContent = t.st[st];
     if (isEdit()) {
-      btn.title = lang === "es" ? "Clic para cambiar el estado" : "Click to change status";
-      btn.addEventListener("click", function () {
-        var k = keyOf(sec.id, it.id);
-        statusOverride[k] = CYCLE[(CYCLE.indexOf(st) + 1) % CYCLE.length];
+      var sel = document.createElement("select");
+      sel.className = "status-select " + st;
+      CYCLE.forEach(function (s) {
+        var o = document.createElement("option");
+        o.value = s; o.textContent = t.st[s]; if (s === st) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", function () {
+        statusOverride[keyOf(sec.id, it.id)] = sel.value;
         save(LS_STATUS, statusOverride); markDirty(); render();
       });
+      tdSt.appendChild(sel);
     } else {
+      var btn = document.createElement("button");
+      btn.className = "status-btn " + st;
+      btn.textContent = t.st[st];
       btn.disabled = true;
+      tdSt.appendChild(btn);
     }
-    tdSt.appendChild(btn);
     tr.appendChild(tdSt);
 
     // P (desplegable en edición, texto en vista pública). Si está Hecho, no lleva prioridad.
@@ -631,12 +638,26 @@
     if (d.assign && typeof d.assign === "object") { assignStore = d.assign; save(LS_ASSIGN, assignStore); }
   }
 
-  // Al abrir: traer data.json del repo (versión pública/última guardada).
+  // Al abrir: traer data.json del repo y aplicar "gana el más nuevo".
+  // Si el navegador tiene un cambio más reciente que GitHub (autoguardado que no
+  // llegó a salir antes de recargar), NO se pisa: se conserva y se re-guarda.
   function loadFromGitHub(done) {
     var url = "./" + (CFG.meta.github && CFG.meta.github.path || "data.json") + "?t=" + Date.now();
     fetch(url, { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { applyData(d); done(); })
+      .then(function (remote) {
+        var localTs = localStorage.getItem(LS_LOCALTS) || "";
+        var remoteTs = (remote && remote.updated) || "";
+        if (remote && (!localTs || remoteTs >= localTs)) {
+          // GitHub está igual o más nuevo → usar GitHub
+          applyData(remote);
+          if (remoteTs) localStorage.setItem(LS_LOCALTS, remoteTs);
+        } else if (localTs && remoteTs && localTs > remoteTs && isEdit()) {
+          // El navegador tiene cambios sin sincronizar → conservarlos y re-guardar
+          dirty = true; setSaveState("pending"); scheduleAutosave();
+        }
+        done();
+      })
       .catch(function () { done(); });   // local (file://) o sin red → usa localStorage
   }
 
@@ -661,6 +682,7 @@
   function markDirty() {
     dirty = true;
     save(LS_STATUS, statusOverride); save(LS_PRIO, prioOverride); save(LS_LINKS, linkStore); save(LS_NOTES, noteStore); save(LS_ASSIGN, assignStore);
+    localStorage.setItem(LS_LOCALTS, new Date().toISOString());   // marca que hay algo local más nuevo
     scheduleAutosave();
     setSaveState("pending");
   }
@@ -685,7 +707,9 @@
     savingNow = true; setSaveState("saving");
     var api = "https://api.github.com/repos/" + gh.owner + "/" + gh.repo + "/contents/" + gh.path;
     var headers = { "Authorization": "token " + token, "Accept": "application/vnd.github+json" };
-    var content = b64(JSON.stringify(currentData(), null, 2));
+    var data = currentData();
+    var savedTs = data.updated;
+    var content = b64(JSON.stringify(data, null, 2));
 
     fetch(api + "?ref=" + gh.branch, { headers: headers, cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -700,6 +724,7 @@
         savingNow = false;
         if (res.ok) {
           if (res.j && res.j.content && res.j.content.sha) localStorage.setItem(LS_SHA, res.j.content.sha);
+          localStorage.setItem(LS_LOCALTS, savedTs);    // local y remoto quedan en sync
           dirty = false; setSaveState("saved");
         } else {
           setSaveState("error");
