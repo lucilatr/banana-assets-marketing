@@ -8,7 +8,7 @@
     "keyart::brand-guide": "hecho",
     "keyart::renders": "hecho",
     "keyart::logo-versions": "hecho",
-    "keyart::wallpapers": "actualizar"
+    "keyart::wallpapers": "revisar"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -110,5 +110,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T15:25:37.891Z"
+  "updated": "2026-10-02T15:25:40.643Z"
 }
