@@ -71,13 +71,10 @@
       font-size: .85rem; display: none; }
     .search-box.has .search-clear { display: inline; }
 
-    /* barra de filtro (por estado / por persona) */
-    .filterbar { margin: 8px 0 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .filter-label { font-size: .85rem; font-weight: 700; color: var(--ink-soft); }
-    .filter-seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; }
-    .seg-btn { border: 0; background: #fff; color: var(--ink); font-weight: 700; font-size: .8rem;
-      padding: 5px 14px; cursor: pointer; }
-    .seg-btn.active { background: var(--ink); color: #fff; }
+    /* barra de filtro (estado + persona, combinados) */
+    .filterbar { margin: 8px 0 6px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+    .filter-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .filter-label { font-size: .82rem; font-weight: 800; color: var(--ink-soft); min-width: 74px; }
     .filter-options { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .filter-chip { display: inline-flex; align-items: center; gap: 5px; background: none; border: 1px solid transparent;
       font: inherit; font-size: .9rem; padding: 3px 7px; border-radius: 999px; cursor: pointer; }

@@ -193,16 +193,18 @@
     return searchQ.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
   }
 
-  // ¿se ve este item con el filtro actual + búsqueda?
+  // ¿se ve este item? Se combinan TODOS los filtros a la vez (búsqueda Y estado Y persona).
   function itemVisible(sec, it) {
     if (!matchesSearch(sec, it)) return false;
-    if (filterMode === "persona") {
-      var sel = (CFG.meta.people || []).filter(function (n) { return personSelected[n]; });
-      if (sel.length === 0) return true;                 // sin personas elegidas → se ven todos
+    // Estado: ocultar los estados marcados
+    if (hiddenStatus[statusOf(sec.id, it)]) return false;
+    // Persona: si hay personas elegidas, el item tiene que estar asignado a alguna
+    var sel = (CFG.meta.people || []).filter(function (n) { return personSelected[n]; });
+    if (sel.length) {
       var assigned = assignStore[keyOf(sec.id, it.id)] || [];
-      return assigned.some(function (n) { return personSelected[n]; });
+      if (!assigned.some(function (n) { return personSelected[n]; })) return false;
     }
-    return !hiddenStatus[statusOf(sec.id, it)];           // modo estado → ocultar los marcados
+    return true;
   }
 
   function renderFilterBar() {
@@ -210,53 +212,45 @@
     var bar = document.getElementById("filterbar");
     bar.innerHTML = "";
 
-    var lab = document.createElement("span");
-    lab.className = "filter-label"; lab.textContent = t.filterBy;
-    bar.appendChild(lab);
-
-    var seg = document.createElement("div");
-    seg.className = "filter-seg";
-    [["estado", t.byStatus], ["persona", t.byPerson]].forEach(function (pair) {
+    // --- Fila Estado ---
+    var rowStatus = document.createElement("div");
+    rowStatus.className = "filter-row";
+    var labS = document.createElement("span");
+    labS.className = "filter-label"; labS.textContent = t.byStatus + ":";
+    rowStatus.appendChild(labS);
+    ["hecho", "actualizar", "revisar", "falta"].forEach(function (k) {
       var b = document.createElement("button");
-      b.className = "seg-btn" + (filterMode === pair[0] ? " active" : "");
-      b.textContent = pair[1];
+      b.className = "filter-chip" + (hiddenStatus[k] ? " off" : "");
+      b.title = hiddenStatus[k] ? t.filterShow : t.filterHide;
+      b.innerHTML = '<span class="chip ' + k + '">' + t.st[k] + "</span>" +
+                    (hiddenStatus[k] ? '<span class="eye">🚫</span>' : "");
       b.addEventListener("click", function () {
-        filterMode = pair[0]; localStorage.setItem(LS_FMODE, filterMode); render();
+        if (hiddenStatus[k]) delete hiddenStatus[k]; else hiddenStatus[k] = true;
+        save(LS_FILTER, hiddenStatus); render();
       });
-      seg.appendChild(b);
+      rowStatus.appendChild(b);
     });
-    bar.appendChild(seg);
+    bar.appendChild(rowStatus);
 
-    var opts = document.createElement("div");
-    opts.className = "filter-options";
-    if (filterMode === "estado") {
-      ["hecho", "actualizar", "revisar", "falta"].forEach(function (k) {
-        var b = document.createElement("button");
-        b.className = "filter-chip" + (hiddenStatus[k] ? " off" : "");
-        b.title = hiddenStatus[k] ? t.filterShow : t.filterHide;
-        b.innerHTML = '<span class="chip ' + k + '">' + t.st[k] + "</span>" +
-                      (hiddenStatus[k] ? '<span class="eye">🚫</span>' : "");
-        b.addEventListener("click", function () {
-          if (hiddenStatus[k]) delete hiddenStatus[k]; else hiddenStatus[k] = true;
-          save(LS_FILTER, hiddenStatus); render();
-        });
-        opts.appendChild(b);
+    // --- Fila Persona / Asignado ---
+    var rowPers = document.createElement("div");
+    rowPers.className = "filter-row";
+    var labP = document.createElement("span");
+    labP.className = "filter-label"; labP.textContent = t.byPerson + ":";
+    rowPers.appendChild(labP);
+    (CFG.meta.people || []).forEach(function (name) {
+      var on = !!personSelected[name];
+      var b = document.createElement("button");
+      b.className = "person-chip" + (on ? " on" : "");
+      b.innerHTML = '<span class="assign-chip" style="background:' + colorFor(name) + '">' +
+                    initials(name).toUpperCase() + "</span><span>" + esc(name) + "</span>";
+      b.addEventListener("click", function () {
+        if (personSelected[name]) delete personSelected[name]; else personSelected[name] = true;
+        save(LS_PSEL, personSelected); render();
       });
-    } else {
-      (CFG.meta.people || []).forEach(function (name) {
-        var on = !!personSelected[name];
-        var b = document.createElement("button");
-        b.className = "person-chip" + (on ? " on" : "");
-        b.innerHTML = '<span class="assign-chip" style="background:' + colorFor(name) + '">' +
-                      initials(name).toUpperCase() + "</span><span>" + esc(name) + "</span>";
-        b.addEventListener("click", function () {
-          if (personSelected[name]) delete personSelected[name]; else personSelected[name] = true;
-          save(LS_PSEL, personSelected); render();
-        });
-        opts.appendChild(b);
-      });
-    }
-    bar.appendChild(opts);
+      rowPers.appendChild(b);
+    });
+    bar.appendChild(rowPers);
 
     // "Limpiar filtros" borra TODO (estado + persona) de una sola vez
     var anyActive = Object.keys(hiddenStatus).length ||
