@@ -11,7 +11,7 @@
     "keyart::wallpapers": "hecho",
     "sitio::website": "revisar",
     "captura::capture-guide": "revisar",
-    "sitio::presskit-page": "revisar"
+    "sitio::presskit-page": "hecho"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -115,5 +115,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T20:40:29.984Z"
+  "updated": "2026-10-02T20:40:34.697Z"
 }
