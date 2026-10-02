@@ -12,7 +12,7 @@
     "sitio::website": "revisar",
     "captura::capture-guide": "revisar",
     "sitio::presskit-page": "hecho",
-    "sitio::factsheet": "hecho",
+    "sitio::factsheet": "revisar",
     "creadores::creator-onepager": "revisar"
   },
   "priority": {
@@ -118,5 +118,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T20:44:47.859Z"
+  "updated": "2026-10-02T20:44:52.221Z"
 }
