@@ -9,7 +9,8 @@
     "keyart::renders": "revisar",
     "keyart::logo-versions": "hecho",
     "keyart::wallpapers": "hecho",
-    "sitio::website": "actualizar"
+    "sitio::website": "actualizar",
+    "captura::capture-guide": "revisar"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -113,5 +114,5 @@
       "FEDERICO CARLINI"
     ]
   },
-  "updated": "2026-10-02T20:34:04.081Z"
+  "updated": "2026-10-02T20:34:06.713Z"
 }
