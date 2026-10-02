@@ -41,7 +41,8 @@
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
     "sitio::website": "LOGO\nponer en el bg TRAILER en loop - o fragmento\nSumar presskit boton\nwishlist now + fecha \nRESPETAR FONT Y GUIA DE COLORES",
     "steam::event-art": "ANUNCIO DEMO\n1920x622 banner sin texto (generalmente la misma imagen que la que se usa 800x450)",
-    "sitio::presskit-page": "PONER BOTON EN LA PAGINA"
+    "sitio::presskit-page": "PONER BOTON EN LA PAGINA",
+    "redes::placa-final": "+ PLACA INICIAL"
   },
   "assign": {
     "captura::capture-guide": [
@@ -110,5 +111,5 @@
       "FERNANDO MALDONADO"
     ]
   },
-  "updated": "2026-10-02T15:34:59.692Z"
+  "updated": "2026-10-02T15:40:52.137Z"
 }
