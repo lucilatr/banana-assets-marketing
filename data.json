@@ -7,7 +7,7 @@
     "creadores::wishlist-button": "revisar",
     "keyart::brand-guide": "hecho",
     "keyart::renders": "revisar",
-    "keyart::logo-versions": "actualizar",
+    "keyart::logo-versions": "hecho",
     "keyart::wallpapers": "hecho"
   },
   "priority": {
@@ -111,5 +111,5 @@
       "FEDERICO CARLINI"
     ]
   },
-  "updated": "2026-10-02T15:40:57.856Z"
+  "updated": "2026-10-02T17:46:48.581Z"
 }
