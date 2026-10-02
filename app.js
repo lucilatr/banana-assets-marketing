@@ -345,38 +345,30 @@
     document.getElementById("progress-label").textContent = UI[lang].progress(c.hecho, c.total) + "  ·  " + pct + "%";
   }
 
-  // ---- Exportar tareas (según el filtro/búsqueda actual) ----
-  function exportTasks() {
+  // ---- Exportar tareas (formato WhatsApp, según el filtro/búsqueda actual) ----
+  // *Título de sección* en negrita; cada tarea como viñeta "- ..."; ordenadas por
+  // prioridad (P1→P2→P3). No se muestra la prioridad, ni el estado, ni los asignados.
+  function buildExportText() {
     var t = UI[lang];
-    var lines = [];
-    lines.push(t.exportTitle);
-    lines.push(t.exportSub + " " + exportFilterDesc());
-    lines.push("");
-    var total = 0;
+    var prioRank = { P1: 1, P2: 2, P3: 3 };
+    var lines = ["*" + t.exportTitle + "*", ""];
     CFG.sections.forEach(function (sec) {
       var vis = sec.items.filter(function (it) { return itemVisible(sec, it); });
       if (!vis.length) return;
-      lines.push("## " + L(sec.title));
-      vis.forEach(function (it) {
-        var k = keyOf(sec.id, it.id);
-        var st = statusOf(sec.id, it);
-        var done = (st === "hecho");
-        var pr = done ? "" : (" [" + priorityOf(sec.id, it) + "]");
-        var box = done ? "[x]" : "[ ]";
-        var who = (assignStore[k] || []);
-        var line = "- " + box + " " + L(it.title) + pr + "  (" + t.st[st] + ")";
-        if (who.length) line += "  — " + who.join(", ");
-        lines.push(line);
-        var mn = noteStore[k];
-        if (mn) mn.split("\n").forEach(function (x) { if (x.trim()) lines.push("    · " + x.trim()); });
-        total++;
+      vis = vis.slice().sort(function (a, b) {
+        var da = statusOf(sec.id, a) === "hecho", db = statusOf(sec.id, b) === "hecho";
+        if (da !== db) return da ? 1 : -1;                 // hechos al final
+        return (prioRank[priorityOf(sec.id, a)] || 9) - (prioRank[priorityOf(sec.id, b)] || 9);
       });
+      lines.push("*" + L(sec.title) + "*");
+      vis.forEach(function (it) { lines.push("- " + L(it.title)); });
       lines.push("");
     });
-    lines.push("—");
-    lines.push(total + " " + t.exportCount);
+    return lines.join("\n").trim() + "\n";
+  }
 
-    var text = lines.join("\n");
+  function exportTasks() {
+    var text = buildExportText();
     var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
