@@ -13,7 +13,7 @@
     "captura::capture-guide": "hecho",
     "sitio::presskit-page": "hecho",
     "sitio::factsheet": "hecho",
-    "creadores::creator-onepager": "revisar"
+    "creadores::creator-onepager": "hecho"
   },
   "priority": {
     "steam::event-art": "P1",
@@ -122,5 +122,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-05T21:55:31.137Z"
+  "updated": "2026-10-05T21:55:43.187Z"
 }
