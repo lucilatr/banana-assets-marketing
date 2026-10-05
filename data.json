@@ -3,7 +3,7 @@
     "keyart::keyart-main": "hecho",
     "creadores::creator-list": "hecho",
     "captura::clip-library": "actualizar",
-    "creadores::wishlist-screen": "revisar",
+    "creadores::wishlist-screen": "hecho",
     "creadores::wishlist-button": "revisar",
     "keyart::brand-guide": "hecho",
     "keyart::renders": "hecho",
@@ -122,5 +122,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-05T21:55:43.187Z"
+  "updated": "2026-10-05T21:55:47.252Z"
 }
