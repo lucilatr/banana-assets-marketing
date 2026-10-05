@@ -43,7 +43,8 @@
     "steam::demo-page::free": "https://store.steampowered.com/app/4900690/Banana_Airways_Demo/",
     "captura::capture-guide::free": "https://bananaairways.com/capture/",
     "creadores::creator-onepager::free": "https://bananaairways.com/creators/",
-    "sitio::factsheet::free": "https://bananaairways.com/factsheet/"
+    "sitio::factsheet::free": "https://bananaairways.com/factsheet/",
+    "sitio::website::free": "https://bananaairways.com/"
   },
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
@@ -121,5 +122,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-05T21:54:13.198Z"
+  "updated": "2026-10-05T21:54:43.857Z"
 }
