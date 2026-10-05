@@ -1,7 +1,7 @@
 {
   "status": {
     "keyart::keyart-main": "hecho",
-    "creadores::creator-list": "actualizar",
+    "creadores::creator-list": "hecho",
     "captura::clip-library": "actualizar",
     "creadores::wishlist-screen": "revisar",
     "creadores::wishlist-button": "revisar",
@@ -122,5 +122,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-05T21:55:19.553Z"
+  "updated": "2026-10-05T21:55:31.137Z"
 }
