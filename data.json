@@ -12,7 +12,7 @@
     "sitio::website": "hecho",
     "captura::capture-guide": "hecho",
     "sitio::presskit-page": "hecho",
-    "sitio::factsheet": "revisar",
+    "sitio::factsheet": "hecho",
     "creadores::creator-onepager": "revisar"
   },
   "priority": {
@@ -122,5 +122,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-05T21:55:07.571Z"
+  "updated": "2026-10-05T21:55:19.553Z"
 }
