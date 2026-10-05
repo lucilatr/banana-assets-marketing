@@ -9,7 +9,7 @@
     "keyart::renders": "hecho",
     "keyart::logo-versions": "hecho",
     "keyart::wallpapers": "hecho",
-    "sitio::website": "revisar",
+    "sitio::website": "hecho",
     "captura::capture-guide": "hecho",
     "sitio::presskit-page": "hecho",
     "sitio::factsheet": "revisar",
@@ -122,5 +122,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-05T21:54:43.857Z"
+  "updated": "2026-10-05T21:54:48.249Z"
 }
