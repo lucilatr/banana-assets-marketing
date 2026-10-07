@@ -46,7 +46,8 @@
     "creadores::creator-onepager::free": "https://bananaairways.com/creators/",
     "sitio::factsheet::free": "https://bananaairways.com/factsheet/",
     "sitio::website::free": "https://bananaairways.com/",
-    "steam::event-art::free": "https://drive.google.com/drive/folders/1tDmO9oqRYd_VVeqrIivu8F7soX1DtSeb?usp=drive_link"
+    "steam::event-art::free": "https://drive.google.com/drive/folders/1tDmO9oqRYd_VVeqrIivu8F7soX1DtSeb?usp=drive_link",
+    "redes::placa-final::free": "https://drive.google.com/drive/folders/1G8Gu5AB6QV05TsSkcybjhmP2rq2lljhn?usp=drive_link"
   },
   "notes": {
     "captura::clip-library": "CAPTURAR SITUACIONES CON JERINGAS",
@@ -124,5 +125,5 @@
       "JORGE TERESO"
     ]
   },
-  "updated": "2026-10-07T22:13:48.743Z"
+  "updated": "2026-10-07T22:14:53.480Z"
 }
